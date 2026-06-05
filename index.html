@@ -1,0 +1,2512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AM Sales | Master Ledger v5 Professional</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AM Sales Pro v5">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135706.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.2);
+            }
+        }
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        @keyframes pulse-slow {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #0f172a; 
+            min-height: 100vh;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        [x-cloak] { display: none !important; }
+        
+        .glass-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        .glass-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e1;
+        }
+        
+        .kpi-card {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease-in-out;
+            animation: scaleIn 0.6s ease-out;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.02), transparent);
+            pointer-events: none;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-accent: #3b82f6;
+            --muted: #64748b;
+            --bg-soft: #f8fafc;
+            --border: #e2e8f0;
+        }
+        .data-input {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background: #ffffff;
+            color: #0f172a;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.15s ease;
+        }
+        .data-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .field-label { font-size: 0.75rem; font-weight: 600; color: #64748b; letter-spacing: 0.025em; text-transform: uppercase; }
+        .nav-btn { display: flex; gap: 0.75rem; align-items: center; padding: 0.75rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.875rem; }
+        .nav-btn:focus, .nav-btn:hover { transform: translateY(-1px); }
+        .kpi-icon { position: absolute; right: 1rem; bottom: 1rem; width: 2rem; height: 2rem; opacity: 0.1; }
+        table th { background: #f8fafc; color: #64748b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        table td { color: #0f172a; font-size: 0.875rem; }
+        .btn-subtle { background: transparent; border: 1px solid #e2e8f0; }
+        /* AI Chat Styles */
+        .ai-chat-window {
+            position: fixed;
+            bottom: 5rem;
+            right: 1.5rem;
+            width: 350px;
+            max-height: 500px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        .message-user { background: #4f46e5; color: white; align-self: flex-end; border-radius: 1rem 1rem 0 1rem; }
+        .message-ai { background: #f1f5f9; color: #1e293b; align-self: flex-start; border-radius: 1rem 1rem 1rem 0; }
+    </style>
+</head>
+<body x-data="ledgerApp()" x-init="init()">
+
+    <!-- Desktop Sidebar -->
+    <aside id="sidebar-desktop" class="fixed inset-y-0 left-0 w-64 bg-slate-900 hidden lg:flex flex-col z-50 shadow-2xl">
+        <div class="p-6 border-b border-slate-800"><h1 class="text-xl font-bold text-white tracking-tight">AM Sales <span class="text-blue-400">v5 Pro</span></h1></div>
+        <nav class="flex-1 px-3 space-y-1 mt-4">
+            <button @click="view = 'dashboard'" :class="view === 'dashboard' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span>Dashboard</span>
+            </button>
+            <button @click="view = 'records'" :class="view === 'records' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                <span>Records</span>
+            </button>
+            <button @click="view = 'entry'" :class="view === 'entry' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <span>New Entry</span>
+            </button>
+            <button @click="view = 'analysis'" :class="view === 'analysis' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <span>Analysis</span>
+            </button>
+            <button @click="view = 'cashflow'" :class="view === 'cashflow' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Cashflow</span>
+            </button>
+        </nav>
+        <div class="p-4 space-y-2 border-t border-slate-800">
+            <button @click="$refs.fileInput.click()" class="w-full bg-slate-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-slate-600 transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                Import Excel
+            </button>
+            <button @click="exportData" class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Export Excel
+            </button>
+            <!-- Removed Excel Import input -->
+            <!-- <input type="file" x-ref="fileInput" class="hidden" @change="importData"> -->
+            <button @click="backupDataJSON" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                Backup JSON
+            </button>
+            <input type="file" x-ref="fileInput" class="hidden" @change="importData">
+        </div>
+    </aside>
+
+    <!-- AI Assistant Floating UI -->
+    <div id="ai-assistant" class="fixed bottom-6 right-6 z-[1000]">
+        <button @click="aiOpen = !aiOpen" class="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center animate-glow">
+            <svg x-show="!aiOpen" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+            <svg x-show="aiOpen" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
+        <div x-show="aiOpen" x-cloak class="ai-chat-window flex flex-col overflow-hidden" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90 translate-y-10" x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+            <div class="p-4 bg-indigo-600 text-white flex justify-between items-center">
+                <span class="font-bold text-sm">Gemini AI Assistant</span>
+                <span class="text-[10px] bg-indigo-500 px-2 py-0.5 rounded-full">v5 Pro</span>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]" id="ai-chat-history">
+                <div class="message-ai p-3 text-xs">
+                    Hi! I'm your AI assistant. Ask me about your sales, who owes money, or how to use the app!
+                </div>
+                <template x-for="msg in aiHistory" :key="msg.id">
+                    <div :class="msg.role === 'user' ? 'message-user' : 'message-ai'" class="p-3 text-xs max-w-[80%]" x-text="msg.text"></div>
+                </template>
+                <div x-show="aiThinking" class="text-[10px] text-slate-400 italic">Gemini is thinking...</div>
+            </div>
+            <div class="p-3 border-t border-slate-100 bg-slate-50 flex gap-2">
+                <input type="text" x-model="aiQuery" @keydown.enter="askAI" placeholder="Ask anything..." class="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                <button @click="askAI" class="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div x-show="isLoading" x-cloak class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300" x-transition:enter="opacity-0" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="opacity-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center gap-4 animate-pulse-slow">
+            <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <div class="text-center space-y-2">
+                <p class="text-slate-700 font-semibold">Processing your request...</p>
+                <div class="w-64 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                    <div class="bg-blue-600 h-full transition-all duration-300 ease-out" 
+                         :style="`width: ${progress}%`"
+                         :class="progress === 100 ? 'bg-emerald-500' : 'bg-blue-600'"></div>
+                </div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" x-text="`${progress}% Complete`"></p>
+                <button x-show="importReader" @click="cancelImport" class="mt-4 px-4 py-2 bg-rose-100 text-rose-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-rose-200 transition-colors">
+                    Cancel Import
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation Overlay -->
+    <div id="sidebar-mobile" x-show="mobileMenuOpen" x-cloak class="fixed inset-0 z-[60] lg:hidden">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="mobileMenuOpen = false"></div>
+        <nav class="relative bg-white w-72 h-full p-6 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-lg font-bold text-slate-800">AM Sales <span class="text-blue-600">Pro</span></h1>
+                <button @click="mobileMenuOpen = false" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="space-y-1 flex-1">
+                <button @click="view = 'dashboard'; mobileMenuOpen = false" :class="view === 'dashboard' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    <span>Dashboard</span>
+                </button>
+                <button @click="view = 'records'; mobileMenuOpen = false" :class="view === 'records' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    <span>Records</span>
+                </button>
+                <button @click="view = 'entry'; mobileMenuOpen = false" :class="view === 'entry' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>New Entry</span>
+                </button>
+                <button @click="view = 'analysis'; mobileMenuOpen = false" :class="view === 'analysis' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <span>Business Analysis</span>
+                </button>
+                <button @click="view = 'cashflow'; mobileMenuOpen = false" :class="view === 'cashflow' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Cashflow</span>
+                </button>
+                <hr class="border-slate-200 my-4">
+                <button @click="$refs.fileInput.click(); mobileMenuOpen = false" class="w-full flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 font-medium text-sm space-x-3 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    <span>Import Excel</span>
+                </button>
+                <button @click="exportData(); mobileMenuOpen = false" class="w-full flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 font-medium text-sm space-x-3 rounded-lg transition-colors duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>Export Excel</span>
+                </button>
+                <button @click="backupDataJSON(); mobileMenuOpen = false" class="w-full flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 font-medium text-sm space-x-3 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                    <span>Backup JSON</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <main class="lg:ml-64 min-h-screen transition-all duration-300">
+        <header id="main-header" class="p-4 lg:p-6 flex justify-between items-center bg-white border-b border-slate-200 sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <button @click="mobileMenuOpen = true" class="lg:hidden text-slate-500 hover:text-slate-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="transition-all duration-300">
+                    <h2 class="text-lg lg:text-xl font-semibold" x-text="view === 'entry' ? 'New Entry' : view === 'records' ? 'Records' : view === 'cashflow' ? 'Cashflow Ledger' : view === 'analysis' ? 'Analysis' : 'Dashboard'"></h2>
+                    <p class="text-xs text-slate-500" x-text="`${entries.length} transactions`"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button @click="showNotifications = !showNotifications" class="relative p-2 text-slate-500 hover:text-blue-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <template x-if="notifications.length > 0">
+                        <span class="absolute top-2 right-2 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    </template>
+                </button>
+                <div class="h-6 w-px bg-slate-200"></div>
+                <button @click="clearStorage" class="text-xs font-medium text-red-500 hover:text-red-700 transition-colors">Clear Data</button>
+            </div>
+        </header>
+
+        <div class="p-4 lg:p-8 max-w-7xl mx-auto">
+            
+            <div id="view-dashboard" x-show="view === 'dashboard'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-8">
+
+                <!-- iPhone / Mobile Connection Helper -->
+                <template x-if="serverUrl">
+                    <div class="glass-card p-4 bg-indigo-50 border-indigo-200 flex items-center justify-between animate-float">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">iPhone / Mobile Access</p>
+                                <p class="text-sm font-medium text-slate-700">Open Safari and visit: <span class="font-bold text-indigo-700 underline" x-text="serverUrl"></span></p>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-indigo-400 font-medium hidden md:block italic">Ensure iPhone is on the same Wi-Fi</p>
+                    </div>
+                </template>
+
+                <!-- Visual Analytics Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-semibold mb-4 text-slate-700">Revenue vs Outstanding Trend</h3>
+                        <canvas id="revenueChart" height="150"></canvas>
+                    </div>
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-semibold mb-4 text-slate-700">Top Items by Weight</h3>
+                        <canvas id="itemStockChart" height="150"></canvas>
+                    </div>
+                </div>
+
+                <!-- Bill Search Bar -->
+                <div id="dashboard-search" class="glass-card p-4">
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <div class="flex-1 transition-all duration-200">
+                            <label class="field-label">Quick Search by Bill No</label>
+                            <div class="relative">
+                                <input type="text" x-model="billSearchQuery" @input="debounceFindBill" placeholder="Enter Bill Number (e.g. 3676)..." class="data-input">
+                                <svg class="absolute right-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <template x-if="foundEntry">
+                        <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 flex-1">
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Date/Bill</p><p class="text-sm font-medium" x-text="formatDate(foundEntry.Date) + ' / #' + foundEntry['Bill No']"></p></div>
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Owner/Cust</p><p class="text-sm font-medium" x-text="foundEntry.Owner + ' → ' + foundEntry.Customer"></p></div>
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Item</p><p class="text-sm font-medium" x-text="foundEntry.Item"></p></div>
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Net KG</p><p class="text-sm font-medium text-blue-600" x-text="foundEntry['N.Kilo'] + ' kg'"></p></div>
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Total</p><p class="text-sm font-medium text-emerald-600" x-text="formatCurrency(foundEntry['C.Amount'])"></p></div>
+                            </div>
+                            <div class="flex gap-2 w-full md:w-auto">
+                                <button @click="loadFoundIntoForm" class="flex-1 md:flex-none bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200">Load to Entry</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div id="dashboard-date-filter" class="glass-card p-4">
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <!-- Consolidated Report Mode Toggle -->
+                        <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 mb-4 md:mb-0">
+                            <span class="text-[10px] font-semibold text-slate-500 uppercase px-2">Print Layout</span>
+                            <div class="flex bg-white rounded-md p-1 shadow-sm border border-slate-200">
+                                <button @click="reportMode = 'summary'" :class="reportMode === 'summary' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-800'" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Summary</button>
+                                <button @click="reportMode = 'compact'" :class="reportMode === 'compact' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-800'" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Compact</button>
+                                <button @click="reportMode = 'detail'" :class="reportMode === 'detail' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-800'" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Detail</button>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 grid grid-cols-2 gap-4 transition-all duration-200">
+                            <div>
+                                <label class="field-label">Start Date</label>
+                                <input type="date" x-model="startDate" class="data-input">
+                            </div>
+                            <div>
+                                <label class="field-label">End Date</label>
+                                <input type="date" x-model="endDate" class="data-input">
+                            </div>
+                        </div>
+                        <button @click="startDate = ''; endDate = ''" x-show="startDate || endDate" class="text-xs font-medium text-red-500 hover:text-red-700 px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50 transition-colors duration-200">Clear Dates</button>
+                    </div>
+                </div>
+
+                <div id="dashboard-kpis" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="kpi-card border-l-4 border-l-blue-500">
+                        <p class="field-label">Total Revenue</p>
+                        <p class="text-2xl font-semibold text-slate-900" x-text="formatCurrency(totals.revenue)"></p>
+                        <svg class="kpi-icon text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div class="kpi-card border-l-4 border-l-emerald-500">
+                        <p class="field-label">Total Net Weight</p>
+                        <p class="text-2xl font-semibold text-slate-900" x-text="formatNumber(totals.weight) + ' KG'"></p>
+                        <svg class="kpi-icon text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                    </div>
+                    <div class="kpi-card border-l-4 border-l-rose-500">
+                        <p class="field-label">Total Outstanding</p>
+                        <p class="text-2xl font-semibold text-rose-600" :class="totals.balance > 0 ? 'animate-pulse' : ''" x-text="formatCurrency(totals.balance)"></p>
+                        <svg class="kpi-icon text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    </div>
+                </div>
+                <template x-if="importMessage">
+                    <div class="mt-6 p-5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold">
+                        <span x-text="importMessage"></span>
+                    </div>
+                </template>
+
+                <div id="dashboard-summaries" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div id="summary-owner" class="glass-card">
+                        <div class="p-4 border-b border-slate-200 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-semibold text-sm">Summary by Owner</h3>
+                                <button @click="
+                                    if (reportMode === 'summary') printSummaryReport('Owner Summary Report', summariesByOwner, 'owner');
+                                    else if (reportMode === 'compact') printCompactDetailedReport('Owner Detail Report (Compact)', 'Owner', searchOwnerSummary);
+                                    else printDetailedReport('Owner Detail Report (Full)', 'Owner', searchOwnerSummary)
+                                " class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                    Print <span x-text="reportMode"></span>
+                                </button>
+                            </div>
+                            <input type="text" x-model="searchOwnerSummary" placeholder="Search Owners..." class="mt-2 data-input">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase">Owner</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase">Txns</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Revenue</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Actual</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Cash</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Cheque</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Weight</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Outstanding</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <template x-for="summary in summariesByOwner" :key="summary.owner">
+                                        <tr class="hover:bg-blue-50/30 transition">
+                                            <td class="p-3 text-xs font-bold text-slate-900" x-text="summary.owner"></td>
+                                            <td class="p-3 text-xs font-medium" x-text="summary.count"></td>
+                                            <td class="p-3 text-xs font-bold text-blue-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
+                                            <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.aAmount)"></td>
+                                            <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cash)"></td>
+                                            <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cheque)"></td>
+                                            <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.weight) + ' KG'"></td>
+                                            <td class="p-3 text-xs font-bold text-rose-500 text-right tabular-nums" x-text="formatNumber(summary.balance)"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="summary-customer" class="glass-card">
+                        <div class="p-4 border-b border-slate-200 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-semibold text-sm">Summary by Customer</h3>
+                                <button @click="
+                                    if (reportMode === 'summary') printSummaryReport('Customer Summary Report', summariesByCustomer, 'customer');
+                                    else if (reportMode === 'compact') printCompactDetailedReport('Customer Detail Report (Compact)', 'Customer', searchCustomerSummary);
+                                    else printDetailedReport('Customer Detail Report (Full)', 'Customer', searchCustomerSummary)
+                                " class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                    Print <span x-text="reportMode"></span>
+                                </button>
+                            </div>
+                            <input type="text" x-model="searchCustomerSummary" placeholder="Search Customers..." class="mt-2 data-input">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase">Customer</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase">Txns</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Revenue</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Actual</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Cash</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Cheque</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Weight</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Outstanding</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <template x-for="summary in summariesByCustomer" :key="summary.customer">
+                                        <tr class="hover:bg-blue-50/30 transition">
+                                            <td class="p-3 text-xs font-bold text-slate-900" x-text="summary.customer"></td>
+                                            <td class="p-3 text-xs font-medium" x-text="summary.count"></td>
+                                            <td class="p-3 text-xs font-bold text-blue-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
+                                            <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.aAmount)"></td>
+                                            <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cash)"></td>
+                                            <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cheque)"></td>
+                                            <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.weight) + ' KG'"></td>
+                                            <td class="p-3 text-xs font-bold text-rose-500 text-right tabular-nums" x-text="formatNumber(summary.balance)"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="summary-item" class="glass-card">
+                        <div class="p-4 border-b border-slate-200 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-semibold text-sm">Summary by Item</h3>
+                                <button @click="
+                                    if (reportMode === 'summary') printSummaryReport('Item Summary Report', summariesByItem, 'item');
+                                    else if (reportMode === 'compact') printCompactDetailedReport('Item Detail Report (Compact)', 'Item', searchItemSummary);
+                                    else printDetailedReport('Item Detail Report (Full)', 'Item', searchItemSummary)
+                                " class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                    Print <span x-text="reportMode"></span>
+                                </button>
+                            </div>
+                            <input type="text" x-model="searchItemSummary" placeholder="Search Items..." class="mt-2 data-input">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase">Item</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase">Txns</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Revenue</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Actual</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Cash</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Cheque</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Weight</th>
+                                        <th class="p-3 text-[9px] font-black text-slate-400 uppercase text-right">Outstanding</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <template x-for="summary in summariesByItem" :key="summary.item">
+                                        <tr class="hover:bg-blue-50/30 transition">
+                                            <td class="p-3 text-xs font-bold text-slate-900" x-text="summary.item"></td>
+                                            <td class="p-3 text-xs font-medium" x-text="summary.count"></td>
+                                            <td class="p-3 text-xs font-bold text-blue-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
+                                            <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.aAmount)"></td>
+                                            <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cash)"></td>
+                                            <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cheque)"></td>
+                                            <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.weight) + ' KG'"></td>
+                                            <td class="p-3 text-xs font-bold text-rose-500 text-right tabular-nums" x-text="formatNumber(summary.balance)"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="summary-outstanding" class="glass-card">
+                        <div class="p-4 border-b border-slate-200 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-semibold text-sm text-rose-600 uppercase tracking-tight">Outstanding Balances</h3>
+                                <button @click="
+                                    if (reportMode === 'summary') printSummaryReport('Outstanding Summary Report', summariesByOutstanding, 'owner');
+                                    else if (reportMode === 'compact') printCompactDetailedReport('Outstanding Detail Report (Compact)', 'Owner', searchOutstandingSummary, true);
+                                    else printDetailedReport('Outstanding Detail Report (Full)', 'Owner', searchOutstandingSummary, true)
+                                " class="text-xs bg-rose-600 text-white px-3 py-1.5 rounded hover:bg-rose-700 transition font-medium flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                    Print <span x-text="reportMode"></span>
+                                </button>
+                            </div>
+                            <input type="text" x-model="searchOutstandingSummary" placeholder="Search Owners with Outstanding..." class="mt-2 data-input">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase">Owner</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase">Txns</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Revenue</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Actual</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Cash</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Cheque</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Weight</th>
+                                        <th class="p-3 text-xs font-semibold text-slate-500 uppercase text-right">Outstanding</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <template x-for="summary in summariesByOutstanding" :key="summary.owner">
+                                        <tr class="hover:bg-blue-50/30 transition">
+                                            <td class="p-3 text-xs font-bold text-slate-900" x-text="summary.owner"></td>
+                                            <td class="p-3 text-xs font-medium" x-text="summary.count"></td>
+                                            <td class="p-3 text-xs font-bold text-blue-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
+                                            <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.aAmount)"></td>
+                                            <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cash)"></td>
+                                            <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cheque)"></td>
+                                            <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.weight) + ' KG'"></td>
+                                            <td class="p-3 text-xs font-bold text-rose-500 text-right tabular-nums" x-text="formatNumber(summary.balance)"></td>
+                                        </tr>
+                                    </template>
+                                    <template x-if="summariesByOutstanding.length === 0">
+                                        <tr>
+                                            <td colspan="7" class="p-3 text-xs text-center text-slate-500">No outstanding balances found.</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Placeholder for potential future 4th summary card if needed -->
+                    <div class="glass-card hidden lg:block">
+                        <div class="p-4 border-b bg-slate-50/50">
+                            <h3 class="font-bold text-sm text-slate-400">Additional Summary (Coming Soon)</h3>
+                        </div>
+                        <div class="p-4 text-center text-slate-300 text-sm">
+                            <p>This space can be used for more insights.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="view-records" x-show="view === 'records'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-8">
+                <div id="records-filter" class="glass-card p-4">
+                    <label class="field-label">Global Records Search</label>
+                    <input type="text" x-model="searchRecordsQuery" placeholder="Search by Owner, Customer, Bill, Item or Mark..." class="data-input">
+                </div>
+                <div id="records-table" class="glass-card">
+                    <div id="records-header" class="p-4 border-b border-slate-200 flex justify-between items-center">
+                        <h3 class="font-semibold text-sm">Master Ledger (<span x-text="filteredEntries.length"></span> Records)</h3>
+                        <div class="flex gap-3 items-center">
+                            <button @click="reportMode === 'summary' ? printSummaryReport('Master Ledger Summary', summariesByOwner, 'owner') : (reportMode === 'compact' ? printCompactDetailedReport('Master Ledger (Compact)', '', '') : printDetailedReport('Master Ledger (Full)', '', ''))" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                Print Ledger
+                            </button>
+                            <span class="text-xs bg-slate-100 px-2 py-1 rounded border border-slate-200 font-medium text-slate-500">Swipe horizontally</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <template x-for="head in fullHeaders">
+                                        <th class="p-4 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap border-r border-slate-200" :class="head === 'Source' ? 'bg-slate-100' : ''" x-text="head"></th>
+                                    </template>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <template x-for="entry in filteredEntries" :key="entry.id">
+                                    <tr :class="editingId === entry.id ? 'bg-blue-100/50 border-2 border-indigo-400' : 'hover:bg-blue-50/30 transition'">
+                                        <template x-for="head in fullHeaders">
+                                            <td class="p-4 text-xs font-medium border-r border-slate-100"
+                                                :class="{
+                                                    'font-black text-slate-900 bg-slate-50/20': head === 'Owner' || head === 'Customer',
+                                                    'text-blue-600 font-bold': head === 'C.Amount',
+                                                    'text-rose-500 font-bold': head === 'Balance' && entry.Balance > 0,
+                                                    'bg-emerald-50/20': head === 'Item',
+                                                    'text-center': head === 'Source',
+                                                    'text-right tabular-nums': numericHeaders.includes(head)
+                                                }">
+                                                <template x-if="editingId === entry.id && head !== 'Source'">
+                                                    <div>
+                                                        <template x-if="['Pkgs', 'P.Kilo', 'G.Kilo', 'Tare', 'Rate', 'A.Amount', 'Cash', 'Cheque', 'Credit Given', 'Credit Received', 'Kooli'].includes(head)">
+                                                            <input type="number" step="0.01"
+                                                                   x-model.number="editingData[head]"
+                                                                   @input="calcNet(editingData)"
+                                                                   class="w-full px-2 py-1 border border-indigo-400 rounded text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                                                        </template>
+                                                        <template x-if="!['Pkgs', 'P.Kilo', 'G.Kilo', 'Tare', 'Rate', 'A.Amount', 'Cash', 'Cheque', 'Credit Given', 'Credit Received', 'Kooli', 'N.Kilo', 'C.Amount', 'Balance'].includes(head)">
+                                                            <input type="text" 
+                                                                   x-model="editingData[head]"
+                                                                   class="w-full px-2 py-1 border border-indigo-400 rounded text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                                                        </template>
+                                                        <template x-if="['N.Kilo', 'C.Amount', 'Balance'].includes(head)">
+                                                            <span x-text="formatNumber(editingData[head])"></span>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                                <template x-if="editingId !== entry.id">
+                                                    <template x-if="head !== 'Source'">
+                                                        <span x-text="numericHeaders.includes(head) ? formatNumber(entry[head]) : (entry[head] || '-')"></span>
+                                                    </template>
+                                                    <template x-if="head === 'Source'">
+                                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-tighter"
+                                                              :class="entry.Source === 'Import' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'"
+                                                              x-text="entry.Source || 'Manual'"></span>
+                                                    </template>
+                                                </template>
+                                                <template x-if="editingId === entry.id && head === 'Source'">
+                                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-tighter"
+                                                          :class="editingData.Source === 'Import' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'"
+                                                          x-text="editingData.Source || 'Manual'"></span>
+                                                </template>
+                                            </td>
+                                        </template>
+                                        <td class="p-4 text-xs font-medium">
+                                            <template x-if="editingId !== entry.id">
+                                                <div class="flex gap-2">
+                                                    <button @click="printInvoice(entry)" class="text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors border border-emerald-200 font-medium flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                                        Print
+                                                    </button>
+                                                    <button @click="startInlineEdit(entry)" class="text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors border border-blue-200 font-medium flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                                        Edit
+                                                    </button>
+                                                    <button @click="deleteEntry(entry.id)" class="text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors border border-rose-200 font-medium flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <template x-if="editingId === entry.id">
+                                                <div class="flex gap-2">
+                                                    <button @click="saveInlineEdit" class="text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors border border-emerald-200 font-medium text-xs flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                        Save
+                                                    </button>
+                                                    <button @click="cancelInlineEdit" class="text-slate-600 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors border border-slate-200 font-medium text-xs flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </template>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis View -->
+            <div id="view-analysis" x-show="view === 'analysis'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6 pb-20">
+                <div class="glass-card p-6">
+                    <h3 class="text-sm font-semibold mb-4 text-slate-700 uppercase tracking-wider">Owner vs Customer Reconciliation</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="field-label">Select Owner</label>
+                            <select x-model="analysisOwner" class="data-input transition-all duration-200">
+                                <option value="">Choose Owner...</option>
+                                <template x-for="name in owners" :key="name">
+                                    <option :value="name" x-text="name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="field-label">Select Customer</label>
+                            <select x-model="analysisCustomer" class="data-input transition-all duration-200">
+                                <option value="">Choose Customer...</option>
+                                <template x-for="name in customers" :key="name">
+                                    <option :value="name" x-text="name"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 transition-all duration-200 hover:shadow-md">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase">Owner Total (C.Amount)</p>
+                            <p class="text-xl font-bold text-blue-600" x-text="formatCurrency(analysisResult.ownerC)"></p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 transition-all duration-200 hover:shadow-md">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase">Customer Total (A.Amount)</p>
+                            <p class="text-xl font-bold text-indigo-600" x-text="formatCurrency(analysisResult.customerA)"></p>
+                        </div>
+                        <div class="p-4 rounded-lg border transition-all duration-200 hover:shadow-md" :class="analysisResult.diff >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'">
+                            <p class="text-[10px] font-bold uppercase" :class="analysisResult.diff >= 0 ? 'text-emerald-600' : 'text-rose-600'">Net Position (Difference)</p>
+                            <p class="text-xl font-black" :class="analysisResult.diff >= 0 ? 'text-emerald-700' : 'text-rose-700'" x-text="formatCurrency(analysisResult.diff)"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-sm">Summary of Outstanding Balances</h3>
+                        <span class="text-[10px] font-bold bg-rose-100 text-rose-600 px-2 py-1 rounded" x-text="`${summariesByOutstanding.length} Debtors`"></span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase">Entity (Owner Name)</th>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase text-right">Revenue</th>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase text-right">Outstanding</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <template x-for="s in summariesByOutstanding" :key="s.owner">
+                                    <tr class="hover:bg-slate-50 transition-colors duration-150">
+                                        <td class="p-4 text-xs font-bold text-slate-900" x-text="s.owner"></td>
+                                        <td class="p-4 text-xs text-right tabular-nums text-slate-600" x-text="formatCurrency(s.revenue)"></td>
+                                        <td class="p-4 text-xs text-right font-black tabular-nums text-rose-600" x-text="formatCurrency(s.balance)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cashflow Ledger View -->
+            <div id="view-cashflow" x-show="view === 'cashflow'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6 pb-20">
+                <div class="glass-card p-6">
+                    <div class="mb-4">
+                        <label class="field-label">Search Expenses</label>
+                        <input type="text" x-model="searchExpensesQuery" placeholder="Search by category, description, or amount..." class="data-input">
+                    </div>
+                    <h4 class="text-xs font-semibold mb-4 text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-3">Record Cashflow Entry</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div><label class="field-label">Date</label><input type="date" x-model="expenseForm.date" class="data-input" required></div>
+                        <div><label class="field-label">Category</label>
+                            <input type="text" x-model="expenseForm.category" list="expenseCategories" placeholder="e.g. Rent, Fuel, Salaries" class="data-input" required>
+                            <datalist id="expenseCategories"><template x-for="cat in expenseCategories" :key="cat"><option :value="cat"></option></template></datalist>
+                        </div>
+                        <div><label class="field-label">Description</label><input type="text" x-model="expenseForm.description" placeholder="Additional details..." class="data-input"></div>
+                        <div><label class="field-label">Amount</label><input type="number" x-model.number="expenseForm.amount" class="data-input" required></div>
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <button @click="saveExpense" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition" x-text="expenseForm.id ? 'Update Entry' : 'Add Entry'"></button>
+                        <button x-show="expenseForm.id" @click="resetExpenseForm" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors duration-200">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-sm">Cashflow History</h3>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" x-text="`${filteredExpenses.length} Records`"></span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left" x-show="filteredExpenses.length > 0">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase">Date</th>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase">Category</th>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase">Description</th>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase text-right">Amount</th>
+                                    <th class="p-4 text-xs font-semibold text-slate-500 uppercase text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <template x-for="ex in filteredExpenses" :key="ex.id">
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="p-4 text-xs text-slate-600" x-text="formatDate(ex.date)"></td>
+                                        <td class="p-4 text-xs font-bold text-slate-900" x-text="ex.category"></td>
+                                        <td class="p-4 text-xs text-slate-600" x-text="ex.description"></td>
+                                        <td class="p-4 text-xs text-right font-bold text-rose-500 tabular-nums" x-text="formatCurrency(ex.amount)"></td>
+                                        <td class="p-4 text-xs text-center">
+                                            <div class="flex justify-center gap-4">
+                                                <button @click="editExpense(ex)" class="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200">Edit</button>
+                                                <button @click="deleteExpense(ex.id)" class="text-rose-600 hover:text-rose-800 font-medium transition-colors duration-200">Delete</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template x-if="filteredExpenses.length === 0">
+                                    <tr><td colspan="5" class="p-12 text-center text-slate-400 text-xs italic">No cashflow entries recorded yet.</td></tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-entry" x-show="view === 'entry'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6 pb-20">
+                <!-- Bill Search Bar -->
+                <div id="entry-quick-search" class="glass-card p-4">
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <div class="flex-1">
+                            <label class="field-label">Quick Search by Bill No</label>
+                            <div class="relative">
+                                <input type="text" x-model="billSearchQuery" @input="debounceFindBill" placeholder="Enter Bill Number (e.g. 3676)..." class="data-input">
+                                <svg class="absolute right-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <template x-if="foundEntry">
+                        <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Date/Bill</p><p class="text-sm font-medium" x-text="foundEntry.Date + ' / #' + foundEntry['Bill No']"></p></div>
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Owner/Cust</p><p class="text-sm font-medium" x-text="foundEntry.Owner + ' → ' + foundEntry.Customer"></p></div>
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Item</p><p class="text-sm font-medium" x-text="foundEntry.Item"></p></div>
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Net/Total</p><p class="text-sm font-medium text-blue-600" x-text="formatNumber(foundEntry['N.Kilo']) + 'kg / ' + formatCurrency(foundEntry['C.Amount'])"></p></div>
+                            </div>
+                            <div class="ml-4 flex gap-2">
+                                <button @click="loadFoundIntoForm" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">Load Data</button>
+                                <button @click="billSearchQuery = ''; foundEntry = null" class="text-slate-400 hover:text-slate-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div id="entry-entities" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="select-owner" class="glass-card p-6 relative">
+                        <h4 class="text-xs font-semibold mb-4 text-slate-500 uppercase tracking-wide">Select Owner</h4>
+                        <div class="flex justify-between items-center mb-4">
+                            <button @click="isNewOwner = !isNewOwner" class="text-xs font-medium text-blue-600 uppercase tracking-wide hover:text-blue-700 transition-colors" x-text="isNewOwner ? 'Back to List' : '+ Create New'"></button>
+                        </div>
+                        <div x-show="!isNewOwner" class="relative">
+                            <select x-model="form.Owner" class="data-input">
+                                <option value="">Select Owner...</option>
+                                <template x-for="name in owners" :key="name">
+                                    <option :value="name" x-text="name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <input x-show="isNewOwner" type="text" x-model="form.Owner" placeholder="Enter New Owner Name" class="data-input border-emerald-200 focus:border-emerald-400">
+                    </div>
+
+                    <div id="select-customer" class="glass-card p-6 relative">
+                        <h4 class="text-xs font-semibold mb-4 text-slate-500 uppercase tracking-wide">Select Customer</h4>
+                        <div class="flex justify-between items-center mb-4">
+                            <button @click="isNewCust = !isNewCust" class="text-xs font-medium text-blue-600 uppercase tracking-wide hover:text-blue-700 transition-colors" x-text="isNewCust ? 'Back to List' : '+ Create New'"></button>
+                        </div>
+                        <div x-show="!isNewCust" class="relative">
+                            <select x-model="form.Customer" class="data-input">
+                                <option value="">Select Customer...</option>
+                                <template x-for="name in customers" :key="name">
+                                    <option :value="name" x-text="name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <input x-show="isNewCust" type="text" x-model="form.Customer" placeholder="Enter New Customer Name" class="data-input border-emerald-200 focus:border-emerald-400">
+                    </div>
+                </div>
+
+                <div id="entry-general-info" class="glass-card p-6">
+                    <h4 class="text-xs font-semibold mb-4 text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-3">General Information</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div><label class="field-label">Date</label><input type="date" x-model="form.Date" class="data-input"></div>
+                        <div><label class="field-label">Bill No</label><input type="text" x-model="form['Bill No']" class="data-input"></div>
+                        <div><label class="field-label">N</label><input type="text" x-model="form.N" class="data-input"></div>
+                        <div class="col-span-2 md:col-span-1 relative">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="field-label mb-0">Item</label>
+                                <button @click="isNewItem = !isNewItem" class="text-xs font-medium text-blue-600 uppercase hover:text-blue-700 transition-colors" x-text="isNewItem ? 'List' : '+ New'"></button>
+                            </div>
+                            <div x-show="!isNewItem" class="relative">
+                                <select x-model="form.Item" class="data-input">
+                                    <option value="">Select Item...</option>
+                                    <template x-for="name in items" :key="name">
+                                        <option :value="name" x-text="name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <input x-show="isNewItem" type="text" x-model="form.Item" placeholder="New Item Name" class="data-input border-emerald-200 focus:border-emerald-400">
+                        </div>
+                        <div><label class="field-label">Mark</label><input type="text" x-model="form.Mark" class="data-input"></div>
+                        <div class="col-span-2 md:col-span-1"><label class="field-label">Notes / Remark</label><input type="text" x-model="form.Remark" class="data-input"></div>
+                    </div>
+                </div>
+
+                <div id="entry-stock-details" class="glass-card p-6">
+                    <h4 class="text-sm font-semibold mb-4 text-slate-700">Stock Details</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div><label class="field-label">PKGS</label><input type="number" x-model.number="form.Pkgs" @input="calcNet(form)" class="data-input"></div>
+                        <div><label class="field-label">Gross KG</label><input type="number" step="0.01" x-model.number="form['G.Kilo']" @input="calcNet(form)" class="data-input"></div>
+                        <div><label class="field-label">Tare</label><input type="number" step="0.01" x-model.number="form.Tare" @input="calcNet(form)" class="data-input"></div>
+                        <div><label class="field-label text-blue-600">Net KG</label><input type="number" step="0.01" x-model.number="form['N.Kilo']" class="data-input bg-blue-50/50" readonly></div>
+                        <div><label class="field-label">P.Kilo</label><input type="number" step="0.01" x-model.number="form['P.Kilo']" @input="calcNet(form)" class="data-input"></div>
+                        <div><label class="field-label">Kooli</label><input type="number" x-model.number="form.Kooli" class="data-input bg-slate-50" readonly></div>
+                    </div>
+                </div>
+
+                <div id="entry-financials" class="glass-card p-6">
+                    <h4 class="text-xs font-semibold mb-4 text-slate-500 uppercase tracking-wide border-b border-slate-200 pb-3">Payment & Settlement</h4>
+                    <h4 class="text-sm font-semibold mb-4 text-slate-700">Financial</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div><label class="field-label">Rate</label><input type="number" step="0.01" x-model.number="form.Rate" @input="calcAmount(form)" class="data-input"></div>
+                        <div><label class="field-label text-blue-600">C.Amount</label><input type="number" x-model.number="form['C.Amount']" class="data-input bg-blue-50 border-blue-200" readonly></div>
+                        <div><label class="field-label text-slate-600">A.Amount</label><input type="number" step="0.01" x-model.number="form['A.Amount']" @input="calcAmount(form)" class="data-input bg-slate-50"></div>
+                        <div><label class="field-label">Cash Received</label><input type="number" step="0.01" x-model.number="form.Cash" @input="calcAmount(form)" class="data-input"></div>
+                        <div><label class="field-label">Cheque Received</label><input type="number" step="0.01" x-model.number="form.Cheque" @input="calcAmount(form)" class="data-input"></div>
+                        <div><label class="field-label">Credit Given</label><input type="number" x-model.number="form['Credit Given']" class="data-input bg-slate-50" readonly></div>
+                        <div><label class="field-label">Credit Received</label><input type="number" step="0.01" x-model.number="form['Credit Received']" @input="calcAmount(form)" class="data-input"></div>
+                        <div><label class="field-label">Balance</label><input type="number" x-model.number="form.Balance" class="data-input bg-rose-50 border-rose-200" readonly></div>
+                    </div>
+                </div>
+
+                <div id="entry-actions" class="glass-card p-6 bg-slate-900 text-white flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="text-center md:text-left space-y-1">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Transaction Balance</p>
+                        <p class="text-4xl font-semibold text-white" x-text="formatCurrency(form.Balance)"></p>
+                    </div>
+                    <button @click="saveEntry" class="w-full md:w-72 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-sm transition-colors">Commit Transaction</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function ledgerApp() {
+            return {
+                view: 'dashboard',
+
+                // Performance helpers
+                debouncers: {
+                    bill: null,
+                    records: null,
+                    owner: null,
+                    customer: null,
+                    item: null,
+                    outstanding: null
+                },
+
+                createDebounced(fn, delay = 200) {
+                    let t;
+                    return (...args) => {
+                        clearTimeout(t);
+                        t = setTimeout(() => fn.apply(this, args), delay);
+                    };
+                },
+
+                startDate: '',
+                endDate: '',
+                reportMode: 'detail', // 'summary', 'compact', or 'detail'
+                mobileMenuOpen: false,
+                isMobile: false,
+                entries: [],
+                owners: [],
+                customers: [],
+                items: [],
+                expenseCategories: [],
+                expenses: [],
+                analysisOwner: '',
+                analysisCustomer: '',
+                fullHeaders: ['Date', 'N', 'Bill No', 'Owner', 'Mark', 'Item', 'Customer', 'Pkgs', 'P.Kilo', 'G.Kilo', 'Tare', 'N.Kilo', 'Rate', 'C.Amount', 'A.Amount', 'Cash', 'Cheque', 'Credit Given', 'Credit Received', 'Balance', 'Kooli', 'Remark', 'Source'],
+                numericHeaders: ['Pkgs', 'P.Kilo', 'G.Kilo', 'Tare', 'N.Kilo', 'Rate', 'C.Amount', 'A.Amount', 'Cash', 'Cheque', 'Credit Given', 'Credit Received', 'Balance', 'Kooli'],
+                form: {},
+                expenseForm: { date: new Date().toISOString().split('T')[0], category: '', description: '', amount: 0 },
+                importMessage: '',
+                billSearchQuery: '', foundEntry: null,
+                serverUrl: '', // To store LAN IP for iPhone access
+                searchExpensesQuery: '', // New property for expense search
+                isNewOwner: false, isNewCust: false, isNewItem: false,
+                searchRecordsQuery: '',
+                searchOwnerSummary: '', searchCustomerSummary: '', searchItemSummary: '',
+                searchOutstandingSummary: '',
+                notifications: [],
+                showNotifications: false,
+                aiOpen: false,
+                aiQuery: '',
+                aiHistory: [],
+                aiThinking: false,
+                isLoading: false, // New loading state
+                progress: 0,
+                importReader: null,
+                editingId: null,
+                editingData: {},
+                charts: { revenue: null, items: null },
+                    firebaseDB: null,
+
+                async init() {
+                    this.isLoading = true;
+
+                    // Initialize Firebase
+                    const firebaseConfig = {
+                        apiKey: "YOUR_API_KEY",
+                        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+                        projectId: "YOUR_PROJECT_ID",
+                        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+                        messagingSenderId: "YOUR_SENDER_ID",
+                        appId: "YOUR_APP_ID"
+                    };
+                    firebase.initializeApp(firebaseConfig);
+                    this.firebaseDB = firebase.firestore();
+
+                    try {
+                        let loadedData = null;
+
+                        // 1. Attempt to sync from Cloud Database folder first
+                        const cloudResp = await fetch('/api/data');
+                        if (cloudResp.ok) {
+                            loadedData = await cloudResp.json();
+                            if (loadedData && loadedData.entries) {
+                                this.addNotification('Cloud Sync', 'Ledger synced from database folder.', 'success');
+                            }
+                        }
+
+                        // 2. Attempt to sync from Firebase Firestore
+                        if (!loadedData || !loadedData.entries || loadedData.entries.length === 0) {
+                            const doc = await this.firebaseDB.collection('data').doc('master_ledger').get();
+                            if (doc.exists) {
+                                loadedData = doc.data();
+                                this.addNotification('Firebase Sync', 'Ledger synced from Firestore.', 'success');
+                            }
+                        }
+
+                        // 3. Fallback to local storage
+                        if (!loadedData || !loadedData.entries || loadedData.entries.length === 0) {
+                            console.warn('Cloud data not available or empty. Attempting to load from local storage.');
+                            const saved = localStorage.getItem('am_sales_master_v1');
+                            if (saved) {
+                                loadedData = JSON.parse(saved);
+                                this.addNotification('Local Storage', 'Ledger loaded from browser local storage.', 'info');
+                            } else {
+                                console.warn('No data found in local storage either. Starting with empty ledger.');
+                                loadedData = { entries: [], owners: [], customers: [], items: [], expenses: [], expenseCategories: [], notifications: [] };
+                            }
+                        }
+
+                        // 3. Populate app state with loaded data
+                        this.entries = loadedData.entries || [];
+                        this.owners = loadedData.owners || [];
+                        this.customers = loadedData.customers || [];
+                        this.items = loadedData.items || [];
+                        this.expenseCategories = loadedData.expenseCategories || [];
+                        this.expenses = loadedData.expenses || [];
+                        this.notifications = loadedData.notifications || [];
+
+                        // 4. Fetch Server Address for iPhone Access
+                        try {
+                            const infoResp = await fetch('/api/info');
+                            if (infoResp.ok) {
+                                const info = await infoResp.json();
+                                this.serverUrl = `http://${info.ip}:${info.port}`;
+                            }
+                        } catch (e) { console.warn('Server info unavailable'); }
+
+                    } catch (e) {
+                        console.warn('Cloud database offline or error:', e.message);
+                        // If an error occurred during cloud fetch, try local storage as a fallback
+                        if (this.entries.length === 0) { // Check if entries are still empty after the failed cloud attempt
+                             const saved = localStorage.getItem('am_sales_master_v1');
+                             if (saved) {
+                                 const parsed = JSON.parse(saved);
+                                 this.entries = parsed.entries || [];
+                                 this.owners = parsed.owners || [];
+                                 this.customers = parsed.customers || [];
+                                 this.items = parsed.items || [];
+                                 this.expenseCategories = parsed.expenseCategories || [];
+                                 this.expenses = parsed.expenses || [];
+                                 this.notifications = parsed.notifications || [];
+                                 this.addNotification('Local Storage', 'Ledger loaded from browser local storage due to cloud error.', 'info');
+                             }
+                        }
+                    }
+
+                    // 4. Sanitize and normalize loaded data (from either source)
+                    const numKeys = ['Pkgs','P.Kilo','G.Kilo','Tare','N.Kilo','Rate','Kooli','C.Amount','A.Amount','Cash', 'Cheque', 'Credit Given','Credit Received','Balance'];
+                    this.entries = this.entries.map(e => {
+                        numKeys.forEach(k => {
+                            if (k in e) e[k] = Number(e[k] || 0);
+                            else e[k] = 0;
+                        });
+                        e.Date = e.Date || new Date().toISOString().split('T')[0];
+                        e.Owner = String(e.Owner || '').trim();
+                        e.Customer = String(e.Customer || '').trim();
+                        e.Item = String(e.Item || '').trim();
+                        return e;
+                    });
+
+                    // 5. Ensure master lists are unique & sorted
+                    this.owners = [...new Set(this.owners.map(s=>String(s).trim()).filter(Boolean))].sort();
+                    this.customers = [...new Set(this.customers.map(s=>String(s).trim()).filter(Boolean))].sort();
+                    this.items = [...new Set(this.items.map(s=>String(s).trim()).filter(Boolean))].sort();
+                    this.expenseCategories = [...new Set(this.expenseCategories.map(s=>String(s).trim()).filter(Boolean))].sort();
+
+                    this.$watch('entries', () => this.updateCharts());
+                    this.$watch('view', (v) => { if(v === 'dashboard') setTimeout(() => this.updateCharts(), 100); });
+                    this.$watch('expenses', () => this.updateCharts()); // Update charts when expenses change
+                    this.resetForm();
+                    this.isMobile = this.isMobileIPhone() || window.innerWidth < 768;
+                    this.mounted();
+                    setTimeout(() => this.updateCharts(), 500);
+                    this.isLoading = false;
+                },
+
+                persist() {
+                    const data = {
+                        entries: this.entries,
+                        owners: this.owners,
+                            customers: this.customers, // Keep customers
+                            lastUpdated: new Date().toISOString(), // Keep lastUpdated
+                            items: this.items,
+                            expenses: this.expenses,
+                            expenseCategories: this.expenseCategories,
+                            notifications: this.notifications
+                    };
+                    localStorage.setItem('am_sales_master_v1', JSON.stringify(data));
+
+                    // Sync to Firebase Firestore
+                    if (this.firebaseDB) {
+                        this.firebaseDB.collection('data').doc('master_ledger').set(data)
+                            .catch(err => console.warn('Firebase sync failed:', err));
+                    }
+                },
+
+                addNotification(title, message, type = 'info') {
+                    this.notifications.unshift({
+                        id: Date.now(),
+                        title,
+                        message,
+                        type,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                    if (this.notifications.length > 30) this.notifications.pop();
+                    this.persist();
+                },
+
+                removeNotification(id) {
+                    this.notifications = this.notifications.filter(n => n.id !== id);
+                    this.persist();
+                },
+
+                clearNotifications() {
+                    this.notifications = [];
+                    this.persist();
+                },
+
+                async restoreFromCloud() {
+                    if (!confirm('This will overwrite your local data with cloud data. Are you sure?')) return;
+                    this.isLoading = true;
+                    try {
+                        const response = await fetch('/api/data');
+                        if (!response.ok) throw new Error('Could not connect to database server.');
+                        const cloudData = await response.json();
+                        if (cloudData && cloudData.entries) {
+                            localStorage.setItem('am_sales_master_v1', JSON.stringify(cloudData));
+                            await this.init(); 
+                            this.addNotification('Sync Complete', 'Data restored from database/db.json successfully.', 'success');
+                        } else {
+                            throw new Error('Database file is empty.');
+                        }
+                    } catch (error) {
+                        this.addNotification('Sync Error', error.message, 'warning');
+                    }
+                    this.isLoading = false;
+                },
+
+
+
+                get analysisResult() {
+                    let ownerC = 0, customerA = 0;
+                    const filtered = this.entries.filter(e => {
+                        const ownerMatch = !this.analysisOwner || e.Owner === this.analysisOwner;
+                        const custMatch = !this.analysisCustomer || e.Customer === this.analysisCustomer;
+                        return ownerMatch && custMatch;
+                    });
+                    filtered.forEach(e => {
+                        ownerC += Number(e['C.Amount']) || 0;
+                        customerA += Number(e['A.Amount']) || 0;
+                    });
+                    return { ownerC, customerA, diff: customerA - ownerC };
+                },
+
+                get processedEntries() {
+                    // Avoid expensive re-calculation if data hasn't changed
+                    const cacheKey = `${this.entries.length}-${this.startDate}-${this.endDate}-${this.searchRecordsQuery}-${this.billSearchQuery}`;
+                    if (this._lastCacheKey === cacheKey && this._cachedProcessed) return this._cachedProcessed;
+
+                    let list = this.entries;
+                    if (this.startDate || this.endDate) {
+                        list = list.filter(e => {
+                            if (this.startDate && e.Date < this.startDate) return false;
+                            if (this.endDate && e.Date > this.endDate) return false;
+                            return true;
+                        });
+                    }
+                    const q = (this.searchRecordsQuery || this.billSearchQuery || '').toLowerCase().trim();
+                    if (q) {
+                        list = list.filter(e => Object.values(e).some(val => String(val).toLowerCase().includes(q)));
+                    }
+                    this._lastCacheKey = cacheKey;
+                    this._cachedProcessed = list.sort((a, b) => (parseInt(a['Bill No']) || 0) - (parseInt(b['Bill No']) || 0));
+                    return this._cachedProcessed;
+                },
+
+                get monthlyProfit() {
+                    const profitMap = {};
+                    this.entries.forEach(e => {
+                        const month = e.Date.substring(0, 7);
+                        if(!profitMap[month]) profitMap[month] = { revenue: 0, expenses: 0 };
+                        profitMap[month].revenue += Number(e['A.Amount']) || 0;
+                    });
+                    this.expenses.forEach(ex => {
+                        const month = ex.date.substring(0, 7);
+                        if(!profitMap[month]) profitMap[month] = { revenue: 0, expenses: 0 };
+                        profitMap[month].expenses += Number(ex.amount) || 0;
+                    });
+                    return Object.entries(profitMap).map(([month, data]) => ({
+                        month, revenue: data.revenue, expenses: data.expenses, profit: data.revenue - data.expenses
+                    })).sort((a,b) => b.month.localeCompare(a.month));
+                },
+
+                updateCharts() {
+                    const ctxRev = document.getElementById('revenueChart');
+                    if (!ctxRev) return;
+
+                    // Data Prep for Revenue Trend (Group by Month)
+                    const monthlyData = {};
+                    this.processedEntries.forEach(e => {
+                        const month = String(e.Date).substring(0, 7); // YYYY-MM
+                        if(!monthlyData[month]) monthlyData[month] = { rev: 0, bal: 0 };
+                        monthlyData[month].rev += Number(e['C.Amount']) || 0;
+                        monthlyData[month].bal += Number(e.Balance) || 0;
+                    });
+                    const labels = Object.keys(monthlyData).sort();
+
+                    if (this.charts.revenue) this.charts.revenue.destroy();
+                    this.charts.revenue = new Chart(ctxRev, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                { label: 'Revenue', data: labels.map(l => monthlyData[l].rev), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 },
+                                { label: 'Outstanding', data: labels.map(l => monthlyData[l].bal), borderColor: '#f43f5e', borderDash: [5, 5], tension: 0.4 }
+                            ]
+                        },
+                        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+                    });
+
+                    // Data Prep for Item Weight Chart
+                    const ctxItem = document.getElementById('itemStockChart');
+                    if (!ctxItem) return;
+                    const itemData = this.summariesByItem.slice(0, 5);
+                    if (this.charts.items) this.charts.items.destroy();
+                    this.charts.items = new Chart(ctxItem, {
+                        type: 'bar',
+                        data: {
+                            labels: itemData.map(i => i.item),
+                            datasets: [{
+                                label: 'Weight (KG)',
+                                data: itemData.map(i => i.weight),
+                                backgroundColor: '#10b981',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: { 
+                            indexAxis: 'y',
+                            responsive: true, 
+                            plugins: { legend: { display: false } },
+                            scales: { x: { grid: { display: false } }, y: { grid: { display: false } } }
+                        }
+                    });
+                },
+
+                saveExpense() {
+                    this.isLoading = true;
+                    if(!this.expenseForm.date || !this.expenseForm.category || !this.expenseForm.amount) {
+                        this.isLoading = false;
+                        return alert('Date, Category, and Amount are required');
+                    }
+                    const data = { ...this.expenseForm, id: this.expenseForm.id || Date.now() };
+                    if(this.expenseForm.id) {
+                        const idx = this.expenses.findIndex(ex => ex.id === this.expenseForm.id);
+                        if(idx !== -1) this.expenses[idx] = data;
+                        this.addNotification('Cashflow Updated', `Updated expense: ${data.category}`, 'success');
+                    } else {
+                        this.expenses.unshift(data);
+                        this.addNotification('Cashflow Added', `Recorded ${data.category} expense: ${this.formatCurrency(data.amount)}`, 'success');
+                    }
+                    if (data.category && !this.expenseCategories.includes(data.category)) {
+                        this.expenseCategories.push(data.category);
+                    }
+                    this.persist();
+                    this.resetExpenseForm();
+                    this.isLoading = false;
+                },
+                resetExpenseForm() { this.expenseForm = { date: new Date().toISOString().split('T')[0], category: '', description: '', amount: 0 }; },
+                editExpense(ex) { this.expenseForm = { ...ex }; },
+                deleteExpense(id) {
+                    if(confirm('Delete expense?')) {
+                        this.isLoading = true;
+                        this.expenses = this.expenses.filter(ex => ex.id !== id);
+                        this.addNotification('Cashflow Deleted', 'An expense record was removed.', 'warning');
+                        this.persist();
+                        this.isLoading = false;
+                    }
+                },
+
+                get filteredExpenses() {
+                    let list = this.expenses;
+                    const q = (this.searchExpensesQuery || '').toLowerCase().trim();
+                    if (q) {
+                        list = list.filter(ex => 
+                            String(ex.category).toLowerCase().includes(q) ||
+                            String(ex.description).toLowerCase().includes(q) ||
+                            String(ex.amount).toLowerCase().includes(q)
+                        );
+                    }
+                    return list.sort((a, b) => new Date(b.date) - new Date(a.date));
+                },
+
+                get totals() {
+                    const list = this.processedEntries;
+                    return {
+                        revenue: list.reduce((sum, e) => sum + (Number(e['C.Amount']) || 0), 0),
+                        weight: list.reduce((sum, e) => sum + (Number(e['N.Kilo']) || 0), 0),
+                        balance: list.reduce((sum, e) => sum + (Number(e.Balance) || 0), 0)
+                    };
+                },
+
+                get summariesByOwner() {
+                    const cacheKey = `owner-${this.processedEntries.length}-${this.startDate}-${this.endDate}-${this.searchOwnerSummary}`;
+                    if (this._ownerCacheKey === cacheKey && this._cachedOwnerSummary) return this._cachedOwnerSummary;
+
+                    const map = {};
+                    this.processedEntries.forEach(e => {
+                        const owner = e.Owner || 'Unknown';
+                        if (!map[owner]) map[owner] = { revenue: 0, weight: 0, balance: 0, count: 0, aAmount: 0, cash: 0, cheque: 0, crGiven: 0, crRecv: 0, kooli: 0 };
+                        map[owner].revenue += Number(e['C.Amount']) || 0;
+                        map[owner].weight += Number(e['N.Kilo']) || 0;
+                        map[owner].balance += Number(e.Balance) || 0;
+                        map[owner].aAmount += Number(e['A.Amount']) || 0;
+                        map[owner].cash += Number(e.Cash) || 0;
+                        map[owner].cheque += Number(e.Cheque) || 0;
+                        map[owner].crGiven += Number(e['Credit Given']) || 0;
+                        map[owner].crRecv += Number(e['Credit Received']) || 0;
+                        map[owner].kooli += Number(e.Kooli) || 0;
+                        map[owner].count += 1;
+                    });
+                    const summaries = Object.entries(map).map(([owner, data]) => ({ owner, ...data })).sort((a, b) => b.revenue - a.revenue);
+                    const query = String(this.searchOwnerSummary || '').toLowerCase().trim();
+                    
+                    this._ownerCacheKey = cacheKey;
+                    this._cachedOwnerSummary = !query ? summaries : summaries.filter(s => s.owner.toLowerCase().includes(query));
+                    return this._cachedOwnerSummary;
+                },
+
+                get summariesByCustomer() {
+                    const cacheKey = `cust-${this.processedEntries.length}-${this.startDate}-${this.endDate}-${this.searchCustomerSummary}`;
+                    if (this._custCacheKey === cacheKey && this._cachedCustSummary) return this._cachedCustSummary;
+
+                    const map = {};
+                    this.processedEntries.forEach(e => {
+                        const customer = e.Customer || 'Unknown';
+                        if (!map[customer]) map[customer] = { revenue: 0, weight: 0, balance: 0, count: 0, aAmount: 0, cash: 0, cheque: 0, crGiven: 0, crRecv: 0, kooli: 0 };
+                        map[customer].revenue += Number(e['C.Amount']) || 0;
+                        map[customer].weight += Number(e['N.Kilo']) || 0;
+                        map[customer].balance += Number(e.Balance) || 0;
+                        map[customer].aAmount += Number(e['A.Amount']) || 0;
+                        map[customer].cash += Number(e.Cash) || 0;
+                        map[customer].cheque += Number(e.Cheque) || 0;
+                        map[customer].crGiven += Number(e['Credit Given']) || 0;
+                        map[customer].crRecv += Number(e['Credit Received']) || 0;
+                        map[customer].kooli += Number(e.Kooli) || 0;
+                        map[customer].count += 1;
+                    });
+                    const summaries = Object.entries(map).map(([customer, data]) => ({ customer, ...data })).sort((a, b) => b.revenue - a.revenue);
+                    const query = String(this.searchCustomerSummary || '').toLowerCase().trim();
+                    
+                    this._custCacheKey = cacheKey;
+                    this._cachedCustSummary = !query ? summaries : summaries.filter(s => s.customer.toLowerCase().includes(query));
+                    return this._cachedCustSummary;
+                },
+
+                get summariesByItem() {
+                    const cacheKey = `item-${this.processedEntries.length}-${this.startDate}-${this.endDate}-${this.searchItemSummary}`;
+                    if (this._itemCacheKey === cacheKey && this._cachedItemSummary) return this._cachedItemSummary;
+
+                    const map = {};
+                    this.processedEntries.forEach(e => {
+                        const item = e.Item || e['Description '] || 'Unknown';
+                        if (!map[item]) map[item] = { revenue: 0, weight: 0, balance: 0, count: 0, aAmount: 0, cash: 0, cheque: 0, crGiven: 0, crRecv: 0, kooli: 0 };
+                        map[item].revenue += Number(e['C.Amount']) || 0;
+                        map[item].weight += Number(e['N.Kilo']) || 0;
+                        map[item].balance += Number(e.Balance) || 0;
+                        map[item].aAmount += Number(e['A.Amount']) || 0;
+                        map[item].cash += Number(e.Cash) || 0;
+                        map[item].cheque += Number(e.Cheque) || 0;
+                        map[item].crGiven += Number(e['Credit Given']) || 0;
+                        map[item].crRecv += Number(e['Credit Received']) || 0;
+                        map[item].kooli += Number(e.Kooli) || 0;
+                        map[item].count += 1;
+                    });
+                    const summaries = Object.entries(map).map(([item, data]) => ({ item, ...data })).sort((a, b) => b.revenue - a.revenue);
+                    const query = String(this.searchItemSummary || '').toLowerCase().trim();
+                    
+                    this._itemCacheKey = cacheKey;
+                    this._cachedItemSummary = !query ? summaries : summaries.filter(s => s.item.toLowerCase().includes(query));
+                    return this._cachedItemSummary;
+                },
+
+                get summariesByOutstanding() {
+                    const summaries = this.summariesByOwner
+                        .filter(s => s.balance > 0)
+                        .sort((a, b) => b.balance - a.balance); // Sort by outstanding balance descending
+                    
+                    const query = String(this.searchOutstandingSummary || '').toLowerCase().trim();
+                    if (!query) return summaries;
+                    return summaries.filter(s => s.owner.toLowerCase().includes(query));
+                },
+
+                get filteredEntries() {
+                    return this.processedEntries;
+                },
+
+                findBill() {
+                    const q = String(this.billSearchQuery).trim();
+                    if (!q) { this.foundEntry = null; return; }
+                    this.foundEntry = this.entries.find(e => String(e['Bill No']).trim() === q) || null;
+                },
+
+                debounceFindBill: null,
+                async yieldToMain() {
+                    return new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+                },
+
+                mounted() {
+                    // wire debounced bill search (dashboard input uses @input="debounceFindBill")
+                    this.debounceFindBill = this.createDebounced(this.findBill, 250);
+                },
+
+
+                loadFoundIntoForm() {
+                    if(!this.foundEntry) { return; }
+                    this.form = JSON.parse(JSON.stringify(this.foundEntry));
+                    this.isNewOwner = false;
+                    this.isNewCust = false;
+                    this.isNewItem = false;
+                    this.view = 'entry';
+                    this.billSearchQuery = '';
+                    this.foundEntry = null;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                editEntry(entry) {
+                    this.form = JSON.parse(JSON.stringify(entry));
+                    this.isNewOwner = !this.owners.includes(this.form.Owner);
+                    this.isNewCust = !this.customers.includes(this.form.Customer);
+                    this.isNewItem = !this.items.includes(this.form.Item);
+                    this.view = 'entry';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                startInlineEdit(entry) {
+                    this.editingId = entry.id;
+                    this.editingData = JSON.parse(JSON.stringify(entry));
+                },
+
+                saveInlineEdit() {
+                    this.isLoading = true;
+                    if (!this.editingId) return;
+                    const index = this.entries.findIndex(e => e.id === this.editingId);
+                    if (index !== -1) {
+                        this.entries[index] = { ...this.editingData };
+                        this.addNotification('Record Updated', `Changes saved for Bill #${this.editingData['Bill No']}`, 'success');
+                        this.persist();
+                        this.isLoading = false;
+                    }
+                    this.editingId = null;
+                    this.editingData = {};
+                },
+
+                cancelInlineEdit() {
+                    this.editingId = null;
+                    this.editingData = {};
+                },
+
+                isMobileIPhone() {
+                    if (typeof navigator === 'undefined') return false;
+                    const ua = (navigator.userAgent || '').toLowerCase();
+                    return /iphone/.test(ua) || (navigator.platform === 'iPhone' || navigator.platform === 'iPod');
+                },
+
+                async printInvoice(entry) {
+                    this.isLoading = true;
+                    this.progress = 10;
+                    await new Promise(r => setTimeout(r, 50));
+                    const content = `
+                        <div style="padding: 30px; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; background: white;">
+
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px;">
+                                <div>
+                                    <h1 style="margin: 0; color: #4f46e5; font-size: 24px; font-weight: 800;">AM SALES PRO</h1>
+                                    <p style="margin: 4px 0 0 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Master Ledger Transaction</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <p style="margin: 0; font-size: 14px; font-weight: 800;">Invoice #${entry['Bill No'] || 'N/A'}</p>
+                                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b;">${entry.Date}</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+                                <div style="width: 45%;">
+                                    <p style="margin: 0 0 8px 0; font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Customer Details</p>
+                                    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">${entry.Customer}</p>
+                                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #475569;">Mark: ${entry.Mark || '-'}</p>
+                                </div>
+                                <div style="width: 45%; text-align: right;">
+                                    <p style="margin: 0 0 8px 0; font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Supplier / Owner</p>
+                                    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">${entry.Owner}</p>
+                                </div>
+                            </div>
+
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                                <thead>
+                                    <tr style="background: #f8fafc;">
+                                        <th style="padding: 12px; text-align: left; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">ITEM DESCRIPTION</th>
+                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">PKGS</th>
+                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">NET WEIGHT</th>
+                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">RATE</th>
+                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">TOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 16px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid #f1f5f9;">${entry.Item}</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #f1f5f9;">${entry.Pkgs}</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #f1f5f9;">${this.formatNumber(entry['N.Kilo'])} kg</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #f1f5f9;">${this.formatCurrency(entry.Rate)}</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; font-weight: 700; text-align: right; border-bottom: 1px solid #f1f5f9; color: #4f46e5;">${this.formatCurrency(entry['C.Amount'])}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div style="display: flex; justify-content: flex-end;">
+                                <div style="width: 280px; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Calculated Amount:</span>
+                                        <span style="font-size: 12px; font-weight: 700;">${this.formatCurrency(entry['C.Amount'])}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Handling (Kooli):</span>
+                                        <span style="font-size: 12px; font-weight: 700;">${this.formatCurrency(entry.Kooli)}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
+                                        <span style="font-size: 13px; font-weight: 800; color: #0f172a;">Actual Total:</span>
+                                        <span style="font-size: 13px; font-weight: 800; color: #4f46e5;">${this.formatCurrency(entry['A.Amount'])}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Cash Received:</span>
+                                        <span style="font-size: 12px; font-weight: 700; color: #059669;">- ${this.formatCurrency(entry.Cash)}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Cheque Received:</span>
+                                        <span style="font-size: 12px; font-weight: 700; color: #059669;">- ${this.formatCurrency(entry.Cheque)}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Credit Received:</span>
+                                        <span style="font-size: 12px; font-weight: 700;">- ${this.formatCurrency(entry['Credit Received'])}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 2px solid #4f46e5;">
+                                        <span style="font-size: 15px; font-weight: 800; color: #0f172a;">Balance Due:</span>
+                                        <span style="font-size: 15px; font-weight: 900; color: #ef4444;">${this.formatCurrency(entry.Balance)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 80px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                    <div>
+                                        <p style="margin: 0; font-size: 12px; font-weight: 700; color: #64748b;">Remarks:</p>
+                                        <p style="margin: 4px 0 0 0; font-size: 12px; color: #0f172a;">${entry.Remark || 'No additional notes'}</p>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="height: 60px; width: 150px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px;"></div>
+                                        <p style="margin: 0; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Authorized Signature</p>
+                                    </div>
+                                </div>
+                                <p style="margin-top: 40px; text-align: center; font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px;">Thank you for your business</p>
+                            </div>
+                        </div>
+                    `;
+                    this.progress = 50;
+                    const element = document.createElement('div');
+                    element.innerHTML = content;
+                    const scale = this.isMobileIPhone() ? 1 : 2;
+                    const opt = { margin: 0.5, filename: `AM_Invoice_${entry['Bill No']}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        this.progress = 100;
+                        this.isLoading = false;
+                        this.addNotification('Invoice PDF', `Generated invoice for Bill #${entry['Bill No']}`, 'info');
+                    });
+                },
+
+
+                async printDetailedReport(title, filterKey, query, outstandingOnly = false) {
+                    this.isLoading = true;
+                    this.progress = 5;
+                    await this.yieldToMain();
+
+                    const q = String(query || '').toLowerCase().trim();
+                    let reportEntries = this.processedEntries.filter(e => {
+                        const match = !q || String(e[filterKey]).toLowerCase().includes(q);
+                        const balanceCheck = !outstandingOnly || (Number(e.Balance) > 0);
+                        return match && balanceCheck;
+                    });
+
+                    if (this.isMobile && reportEntries.length > 200) {
+                        if (!confirm(`Generating a report for ${reportEntries.length} rows on mobile might freeze your browser. Would you like to cap it at 200 rows?`)) {
+                            this.isLoading = false;
+                            return;
+                        }
+                        reportEntries = reportEntries.slice(0, 200);
+                    }
+
+                    if (reportEntries.length === 0) {
+                        this.isLoading = false;
+                        return alert("No data found for the selected filters.");
+                    }
+
+                    this.progress = 30;
+                    const rangeInfo = (this.startDate || this.endDate)
+                        ? `<p style="margin: 4px 0 0 0; font-size: 11px; color: #6366f1; font-weight: 700;">Range: ${this.startDate ? this.formatDate(this.startDate) : 'Beginning'} — ${this.endDate ? this.formatDate(this.endDate) : 'Present'}</p>` : '';
+
+                    let tRev = 0, tWgt = 0, tBal = 0, tPkgs = 0, tAAmt = 0, tCash = 0, tChq = 0, tCrG = 0, tCrR = 0, tKooli = 0;
+
+                    let rows = '';
+
+                    // Chunked processing to prevent UI freeze
+                    for (let i = 0; i < reportEntries.length; i++) {
+                        const e = reportEntries[i];
+                        tRev += Number(e['C.Amount']) || 0;
+                        tWgt += Number(e['N.Kilo']) || 0;
+                        tBal += Number(e.Balance) || 0;
+                        tPkgs += Number(e.Pkgs) || 0;
+                        tAAmt += Number(e['A.Amount']) || 0;
+                        tCash += Number(e.Cash) || 0;
+                        tChq += Number(e.Cheque) || 0;
+                        tCrG += Number(e['Credit Given']) || 0;
+                        tCrR += Number(e['Credit Received']) || 0;
+                        tKooli += Number(e.Kooli) || 0;
+                        rows += `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 4px; font-size: 7px;">${e.Date}</td>
+                            <td style="padding: 4px; font-size: 7px;">${e.N || ''}</td>
+                            <td style="padding: 4px; font-size: 7px; font-weight: 700;">#${e['Bill No']}</td>
+                            <td style="padding: 4px; font-size: 7px;">${e.Owner}</td>
+                            <td style="padding: 4px; font-size: 7px;">${e.Mark || ''}</td>
+                            <td style="padding: 4px; font-size: 7px;">${e.Item}</td>
+                            <td style="padding: 4px; font-size: 7px;">${e.Customer}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: center;">${this.formatNumber(e.Pkgs)}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e['P.Kilo'])}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e['G.Kilo'])}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Tare)}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right; font-weight: 700;">${this.formatNumber(e['N.Kilo'])}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Rate)}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right; color: #4f46e5; font-weight: 700;">${this.formatNumber(e['C.Amount'])}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e['A.Amount'])}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Cash)}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Cheque)}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e['Credit Given'])}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e['Credit Received'])}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right; color: #ef4444; font-weight: 700;">${this.formatNumber(e.Balance)}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Kooli)}</td>
+                            <td style="padding: 4px; font-size: 7px; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${e.Remark || ''}</td>
+                        </tr>`;
+
+                        if (i % 50 === 0) {
+                            this.progress = Math.floor((i / reportEntries.length) * 40) + 10;
+                            await this.yieldToMain();
+                        }
+                    }
+
+                    this.progress = 60;
+                    const content = `
+                        <div style="padding: 40px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px;">
+                                <div>
+                                    <h1 style="margin: 0; color: #4f46e5; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
+                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #1e293b;">${title}</h2>
+                                    ${rangeInfo}
+                                </div>
+                                <p style="margin: 0; font-size: 10px; color: #64748b; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                                <thead>
+                                    <tr style="background: #f8fafc; text-align: left;">
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">DATE</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">N</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">BILL</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">OWNER</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">MARK</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">ITEM</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">CUSTOMER</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: center;">PKGS</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">P.KG</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">G.KG</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">TARE</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">N.KG</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">RATE</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">C.AMT</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">A.AMT</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CASH</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CHQ</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CR.G</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CR.R</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">BAL</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">KOOLI</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">REMARK</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background: #f1f5f9; font-weight: 800;">
+                                        <td colspan="7" style="padding: 6px; font-size: 7px; text-align: right;">TOTALS:</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: center;">${this.formatNumber(tPkgs)}</td>
+                                        <td colspan="3"></td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tWgt)}</td>
+                                        <td></td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right; color: #4f46e5;">${this.formatNumber(tRev)}</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tAAmt)}</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tCash)}</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tChq)}</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tCrG)}</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tCrR)}</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right; color: #ef4444;">${this.formatNumber(tBal)}</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tKooli)}</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <p style="font-size: 9px; color: #64748b; font-style: italic;">Total Transactions in Report: ${reportEntries.length}</p>
+                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                                <p style="font-size: 9px; color: #94a3b8; letter-spacing: 1px;">AM SALES MASTER LEDGER SYSTEM - INTERNAL USE ONLY</p>
+                            </div>
+                        </div>
+                    `;
+
+                    const element = document.createElement('div');
+                    element.innerHTML = content;
+                    const opt = { 
+                        margin: 0.3, 
+                        filename: `${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`, 
+                        image: { type: 'jpeg', quality: 0.98 }, 
+                        html2canvas: { scale: this.isMobile ? 1 : 2, logging: false, useCORS: true }, 
+                        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } 
+                    };
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        this.progress = 100;
+                        this.addNotification('Report PDF', `${title} generated and downloaded.`, 'info');
+                        setTimeout(() => this.isLoading = false, 500);
+                    });
+                },
+                async printCompactDetailedReport(title, filterKey, query, outstandingOnly = false) {
+                    this.isLoading = true;
+                    this.progress = 10;
+                    await new Promise(r => setTimeout(r, 50));
+                    const q = String(query || '').toLowerCase().trim();
+                    let reportEntries = this.processedEntries.filter(e => {
+                        const match = !q || String(e[filterKey]).toLowerCase().includes(q);
+                        const balanceCheck = !outstandingOnly || (Number(e.Balance) > 0);
+                        return match && balanceCheck;
+                    }).sort((a, b) => {
+                        return (parseInt(a['Bill No']) || 0) - (parseInt(b['Bill No']) || 0);
+                    });
+
+                    if (reportEntries.length === 0) {
+                        this.isLoading = false;
+                        return alert("No data found for the selected filters.");
+                    }
+
+                    this.progress = 30;
+                    const rangeInfo = (this.startDate || this.endDate)
+                        ? `<p style="margin: 4px 0 0 0; font-size: 11px; color: #6366f1; font-weight: 700;">Range: ${this.startDate ? this.formatDate(this.startDate) : 'Beginning'} — ${this.endDate ? this.formatDate(this.endDate) : 'Present'}</p>` : '';
+
+                    let tRev = 0, tPkgs = 0, tWgt = 0, tGKilo = 0, tChq = 0;
+                    let rows = '';
+
+                    // Chunked processing to prevent UI freeze
+                    for (let i = 0; i < reportEntries.length; i++) {
+                        const e = reportEntries[i];
+                        tRev += Number(e['C.Amount']) || 0;
+                        tPkgs += Number(e.Pkgs) || 0;
+                        tWgt += Number(e['N.Kilo']) || 0;
+                        tGKilo += Number(e['G.Kilo']) || 0;
+                        tChq += Number(e.Cheque) || 0;
+                        
+                        if (i % 50 === 0) {
+                            this.progress = Math.floor((i / reportEntries.length) * 30) + 30;
+                            await this.yieldToMain();
+                        }
+
+                        rows += `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 4px; font-size: 7.5px;">${e.Date}</td>
+                            <td style="padding: 4px; font-size: 7.5px; font-weight: 700;">#${e['Bill No']}</td>
+                            <td style="padding: 4px; font-size: 7.5px;">${e.Owner}</td>
+                            <td style="padding: 4px; font-size: 7.5px;">${e.Mark || ''}</td>
+                            <td style="padding: 4px; font-size: 7.5px;">${e.Item}</td>
+                            <td style="padding: 4px; font-size: 7.5px; text-align: center;">${this.formatNumber(e.Pkgs)}</td>
+                            <td style="padding: 4px; font-size: 7.5px; text-align: right;">${this.formatNumber(e['G.Kilo'])}</td>
+                            <td style="padding: 4px; font-size: 7.5px; text-align: right;">${this.formatNumber(e.Tare)}</td>
+                            <td style="padding: 4px; font-size: 7.5px; text-align: right; font-weight: 700;">${this.formatNumber(e['N.Kilo'])}</td>
+                            <td style="padding: 4px; font-size: 7.5px; text-align: right;">${this.formatNumber(e.Rate)}</td>
+                            <td style="padding: 4px; font-size: 7.5px; text-align: right; color: #4f46e5; font-weight: 700;">${this.formatNumber(e['C.Amount'])}</td>
+                            <td style="padding: 4px; font-size: 7.5px; text-align: right;">${this.formatNumber(e.Cheque)}</td>
+                            <td style="padding: 4px; font-size: 7.5px; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${e.Remark || ''}</td>
+                        </tr>`;
+                    }
+
+                    this.progress = 60;
+                    const content = `
+                        <div style="padding: 40px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px;">
+                                <div>
+                                    <h1 style="margin: 0; color: #4f46e5; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
+                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #1e293b;">${title}</h2>
+                                    ${rangeInfo}
+                                </div>
+                                <p style="margin: 0; font-size: 10px; color: #64748b; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                                <thead>
+                                    <tr style="background: #f8fafc; text-align: left;">
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">DATE</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">BILL</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">OWNER</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">MARK</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">ITEM</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: center;">PKGS</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">G.KG</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">TARE</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">N.KG</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">RATE</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">C.AMT</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CHQ</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">REMARK</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background: #f1f5f9; font-weight: 800;">
+                                        <td colspan="5" style="padding: 6px; font-size: 8px; text-align: right;">TOTALS:</td>
+                                        <td style="padding: 6px; font-size: 8px; text-align: center;">${this.formatNumber(tPkgs)}</td>
+                                        <td style="padding: 6px; font-size: 8px; text-align: right;">${this.formatNumber(tGKilo)}</td>
+                                        <td></td>
+                                        <td style="padding: 6px; font-size: 8px; text-align: right;">${this.formatNumber(tWgt)}</td>
+                                        <td></td>
+                                        <td style="padding: 6px; font-size: 8px; text-align: right; color: #4f46e5;">${this.formatNumber(tRev)}</td>
+                                        <td style="padding: 6px; font-size: 8px; text-align: right;">${this.formatNumber(tChq)}</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <p style="font-size: 9px; color: #64748b; font-style: italic;">Total Transactions in Report: ${reportEntries.length}</p>
+                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                                <p style="font-size: 9px; color: #94a3b8; letter-spacing: 1px;">AM SALES MASTER LEDGER SYSTEM - INTERNAL USE ONLY</p>
+                            </div>
+                        </div>
+                    `;
+
+                    const element = document.createElement('div');
+                    element.innerHTML = content;
+                    const opt = {
+                        margin: 0.3,
+                        filename: `${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: this.isMobile ? 1 : 2, logging: false },
+                        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } // Portrait for compact
+                    };
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        this.progress = 100;
+                        this.isLoading = false;
+                        console.log('Compact Detailed Report PDF generated!');
+                        this.addNotification('Report PDF', `${title} (Compact) generated and downloaded.`, 'info');
+                    });
+                },
+                async printSummaryReport(title, list, typeKey) {
+                    this.isLoading = true;
+                    this.progress = 10;
+                    await new Promise(r => setTimeout(r, 50));
+                    const rangeInfo = (this.startDate || this.endDate) 
+                        ? `<p style="margin: 4px 0 0 0; font-size: 11px; color: #6366f1; font-weight: 700;">Range: ${this.startDate ? this.formatDate(this.startDate) : 'Beginning'} — ${this.endDate ? this.formatDate(this.endDate) : 'Present'}</p>` : '';
+                    this.progress = 30;
+                    
+                    let rows = '';
+                    for (let i = 0; i < list.length; i++) {
+                        const item = list[i];
+                        
+                        if (i % 50 === 0) {
+                            this.progress = Math.floor((i / list.length) * 30) + 30;
+                            await this.yieldToMain();
+                        }
+
+                        rows += `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 10px; font-size: 10px; font-weight: 700;">${item[typeKey] || item.owner || item.customer || item.item}</td>
+                            <td style="padding: 10px; font-size: 10px; text-align: center;">${item.count}</td>
+                            <td style="padding: 10px; font-size: 10px; text-align: right; color: #4f46e5;">${this.formatNumber(item.revenue)}</td>
+                            <td style="padding: 10px; font-size: 10px; text-align: right;">${this.formatNumber(item.aAmount)}</td>
+                            <td style="padding: 10px; font-size: 10px; text-align: right; color: #059669;">${this.formatNumber(item.cash)}</td>
+                            <td style="padding: 10px; font-size: 10px; text-align: right; color: #059669;">${this.formatNumber(item.cheque)}</td>
+                            <td style="padding: 10px; font-size: 10px; text-align: right;">${this.formatNumber(item.kooli)}</td>
+                            <td style="padding: 12px; font-size: 11px; text-align: right;">${this.formatNumber(item.weight)} KG</td>
+                            <td style="padding: 12px; font-size: 11px; text-align: right; font-weight: 700; color: #ef4444;">${this.formatNumber(item.balance)}</td>
+                        </tr>
+                    `;
+                    }
+
+                    this.progress = 60;
+                    const content = `
+                        <div style="padding: 40px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px;">
+                                <div>
+                                    <h1 style="margin: 0; color: #4f46e5; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
+                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #1e293b;">${title}</h2>
+                                    ${rangeInfo}
+                                </div>
+                                <p style="margin: 0; font-size: 10px; color: #64748b; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8fafc; text-align: left;">
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-transform: uppercase;">${typeKey.toUpperCase()}</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: center; text-transform: uppercase;">TXNS</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">REVENUE</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">ACTUAL</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">CASH</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">CHQ</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">KOOLI</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">WEIGHT</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">OUTSTANDING</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                                <p style="font-size: 9px; color: #94a3b8; letter-spacing: 1px;">AM SALES MASTER LEDGER SYSTEM - INTERNAL USE ONLY</p>
+                            </div>
+                        </div>
+                    `;
+                    const element = document.createElement('div');
+                    element.innerHTML = content;
+                    const opt = { margin: 0.3, filename: `${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`, image: { type: 'jpeg', quality: 0.98 }, 
+                                 html2canvas: { scale: this.isMobile ? 1 : 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }; // Portrait for summary
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        this.progress = 100;
+                        this.isLoading = false;
+                        console.log('Summary Report PDF generated!');
+                        this.addNotification('Report PDF', `${title} summary generated.`, 'info');
+                    });
+                },
+
+                deleteEntry(id) {
+                    if(confirm("Delete this record permanently?")) {
+                        this.isLoading = true;
+                        this.entries = this.entries.filter(e => e.id !== id);
+                        this.addNotification('Record Deleted', 'A ledger entry was permanently removed.', 'warning');
+                        this.persist();
+                        this.isLoading = false;
+                    }
+                },
+
+                resetForm() {
+                    this.isLoading = false; // Ensure loading is off when form is reset
+                    this.form = {};
+                    this.fullHeaders.forEach(h => { if(h !== 'Source') this.form[h] = h === 'Date' ? new Date().toISOString().split('T')[0] : 0; });
+                    this.form.Item = ''; this.form.Owner = ''; this.form.Customer = '';
+                    this.isNewOwner = false; this.isNewCust = false; this.isNewItem = false;
+                    this.calcNet(this.form);
+                },
+
+                calcNet(obj) {
+                    obj['N.Kilo'] = Number((obj['G.Kilo'] - (Number(obj.Pkgs || 0) * obj.Tare)).toFixed(2));
+                    this.calcAmount(obj);
+                },
+
+                calcAmount(obj) {
+                    obj['C.Amount'] = Math.round(obj['N.Kilo'] * obj.Rate);
+                    obj.Kooli = (Number(obj['A.Amount']) > 0) ? Math.round(obj['A.Amount'] - obj['C.Amount']) : 0;
+                    obj['Credit Given'] = Math.round((obj['A.Amount'] || 0) - (obj.Cash || 0) - (obj.Cheque || 0));
+                    obj.Balance = Math.round((obj['Credit Given'] || 0) - (obj['Credit Received'] || 0));
+                },
+
+                triggerImportTab() {
+                    this.view = 'update';
+                    this.$refs.fileInput.click();
+                },
+
+                saveEntry() {
+                    if(!this.form.Owner || !this.form.Customer || !this.form.Item) {
+                        alert('Enter Owner, Customer and Item');
+                        return;
+                    }
+                    this.isLoading = true;
+                    const normalizedOwner = String(this.form.Owner).trim();
+                    const normalizedCustomer = String(this.form.Customer).trim();
+                    const normalizedItem = String(this.form.Item).trim();
+                    
+                    const entryData = { 
+                        ...this.form, 
+                        Owner: normalizedOwner, 
+                        Customer: normalizedCustomer, 
+                        Item: normalizedItem,
+                        Source: this.form.Source || 'Manual'
+                    };
+
+                    if (this.form.id) {
+                        const index = this.entries.findIndex(e => e.id === this.form.id);
+                        if (index !== -1) {
+                            this.entries[index] = entryData;
+                            this.addNotification('Record Updated', `Updated Bill #${entryData['Bill No']} for ${entryData.Customer}`, 'success');
+                        } else {
+                            entryData.id = Date.now();
+                            this.entries.unshift(entryData);
+                            this.addNotification('New Record', `Created Bill #${entryData['Bill No']} for ${entryData.Customer}`, 'success');
+                        }
+                    } else {
+                        entryData.id = Date.now();
+                        this.entries.unshift(entryData);
+                        this.addNotification('New Record', `Created Bill #${entryData['Bill No']} for ${entryData.Customer}`, 'success');
+                    }
+
+                    if(!this.owners.includes(normalizedOwner)) this.owners.push(normalizedOwner);
+                    if(!this.customers.includes(normalizedCustomer)) this.customers.push(normalizedCustomer);
+                    if(!this.items.includes(normalizedItem)) this.items.push(normalizedItem);
+                    this.persist();
+                    this.resetForm();
+                    this.view = 'dashboard';
+                    this.isLoading = false;
+                },
+
+                importData(event) {
+                    const file = event.target.files ? event.target.files[0] : null;
+                    if (!file) return;
+
+                    this.isLoading = true;
+                    this.progress = 5;
+                    this.importMessage = '';
+
+                    setTimeout(() => {
+                        const reader = new FileReader();
+                    this.importReader = reader;
+                    reader.onerror = () => {
+                        this.isLoading = false;
+                        this.importReader = null;
+                        this.addNotification('Import Error', 'Failed to read the file.', 'warning');
+                    };
+
+                    reader.onabort = () => {
+                        this.isLoading = false;
+                        this.importReader = null;
+                        this.addNotification('Import Cancelled', 'File reading was aborted.', 'info');
+                    };
+
+                    reader.onload = (e) => {
+                        this.progress = 20;
+                        setTimeout(() => {
+                            try {
+                            if (typeof XLSX === 'undefined') {
+                                throw new Error('Excel library not loaded. Please check your connection.');
+                            }
+                            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+                            this.progress = 40;
+                            const sheet = wb.Sheets[wb.SheetNames[0]];
+                            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+                            if (!rows.length || rows.length < 2) {
+                                this.isLoading = false;
+                                this.importReader = null;
+                                this.addNotification('Import Error', 'Imported file appears empty or invalid.', 'warning');
+                                return;
+                            }
+
+                            let headerRow = rows[0].map(h => String(h || '').trim().replace(/\s+/g, ' '));
+                            let dataRows = rows.slice(1);
+
+                            if (!headerRow.some(Boolean) && rows.length > 1) {
+                                headerRow = rows[1].map(h => String(h || '').trim().replace(/\s+/g, ' '));
+                                dataRows = rows.slice(2);
+                            }
+                            
+                            this.progress = 50;
+
+                            const normalizeKey = key => String(key || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                            const buildRow = row => headerRow.reduce((obj, key, index) => {
+                                if (!key) return obj;
+                                obj[normalizeKey(key)] = row[index];
+                                return obj;
+                            }, {});
+
+                            const json = dataRows.map(buildRow).filter(r => {
+                                return normalizeKey(r.Owner || r.owner || r['OWNER'] || r['Owner ']);
+                            });
+
+                            this.progress = 60;
+                            const findDataKey = key => String(key || '').trim();
+                            const existingKeys = new Set(this.entries.map(entry => {
+                                return `${findDataKey(entry.Date)}|${findDataKey(entry['Bill No'])}|${findDataKey(entry.Owner)}|${findDataKey(entry.Customer)}|${Number(entry['C.Amount'])}`;
+                            }));
+
+                            const imported = json.map((r, i) => {
+                                // Date handling for serial numbers and strings
+                                let rawDate = r.date || r.datefield || r.dt || '';
+                                let dateValue;
+                                if (rawDate instanceof Date) {
+                                    dateValue = rawDate.toISOString().split('T')[0];
+                                } else if (!isNaN(rawDate) && typeof rawDate === 'number') {
+                                    // Excel serial date conversion
+                                    const d = new Date((rawDate - 25569) * 86400 * 1000);
+                                    dateValue = d.toISOString().split('T')[0];
+                                } else {
+                                    dateValue = String(rawDate || new Date().toISOString().split('T')[0]);
+                                }
+
+                                const entry = {
+                                    Date: findDataKey(dateValue),
+                                    'Bill No': findDataKey(r.billno || r.billnumber || r.bill || r.invoice || ''),
+                                    Owner: findDataKey(r.owner || r.supplier || r.ownername || ''),
+                                    Customer: findDataKey(r.customer || r.buyer || r.cust || ''),
+                                    'Item': findDataKey(r.item || r.description || r.items || ''),
+                                    Mark: findDataKey(r.mark || r.marks || ''),
+                                    N: findDataKey(r.n || ''),
+                                    Pkgs: Number(r.pkgs || r.packages || r.pkg || 0),
+                                    'P.Kilo': Number(r.pkilo || r.pk || 0),
+                                    'G.Kilo': Number(r.gkilo || r.gk || r.grosskg || 0),
+                                    Tare: Number(r.tare || 0),
+                                    'N.Kilo': Number(r.nkilo || r.nk || r.netkg || 0),
+                                    Rate: Number(r.rate || r.price || 0),
+                                    Kooli: Number(r.kooli || r.handling || 0),
+                                    'C.Amount': Number(r.camount || r.calculatedamount || r.total || 0),
+                                    'A.Amount': Number(r.aamount || r.actualamount || 0),
+                                    Cash: Number(r.cash || r.paid || 0),
+                                    Cheque: Number(r.cheque || r.chq || 0),
+                                    'Credit Given': Number(r.creditgiven || r.crg || 0),
+                                    'Credit Received': Number(r.creditreceived || r.crr || 0),
+                                    Balance: Number(r.balance || r.bal || 0),
+                                    Remark: findDataKey(r.remark || r.notes || r.remarks || ''),
+                                    id: Date.now() + i,
+                                    Source: 'Import'
+                                };
+                                // Ensure Kooli and C.Amount are auto-calculated if missing in import
+                                if (entry['C.Amount'] === 0 && entry['N.Kilo'] > 0 && entry.Rate > 0) {
+                                    entry['C.Amount'] = Math.round(Number(entry['N.Kilo'] * entry.Rate));
+                                }
+                                if (entry.Kooli === 0 && entry['A.Amount'] > 0) {
+                                    entry.Kooli = Math.round(entry['A.Amount'] - entry['C.Amount']);
+                                }
+                                this.fullHeaders.forEach(h => {
+                                    if (!(h in entry) && h !== 'Source') {
+                                        entry[h] = h === 'Date' ? new Date().toISOString().split('T')[0] : 0;
+                                    }
+                                });
+                                return entry;
+                            }).filter(entry => {
+                                const key = `${findDataKey(entry.Date)}|${findDataKey(entry['Bill No'])}|${findDataKey(entry.Owner)}|${findDataKey(entry.Customer)}|${Number(entry['C.Amount'])}`;
+                                if (!entry.Owner || !entry.Customer) return false;
+                                if (existingKeys.has(key)) return false;
+                                existingKeys.add(key);
+                                return true;
+                            });
+                        
+                        // Extract all unique names from the entire Excel file to update master lists
+                        const fileOwners = json.map(r => findDataKey(r.owner || r.supplier || '')).filter(Boolean);
+                        const fileCustomers = json.map(r => findDataKey(r.customer || r.buyer || '')).filter(Boolean);
+                        const fileItems = json.map(r => findDataKey(r.item || r.description || '')).filter(Boolean);
+
+                        // Merge and sort master lists
+                        this.progress = 90;
+                        this.owners = [...new Set([...this.owners, ...fileOwners])].sort();
+                        this.customers = [...new Set([...this.customers, ...fileCustomers])].sort();
+                        this.items = [...new Set([...this.items, ...fileItems])].sort();
+
+                            if (imported.length > 0) {
+                                this.entries = [...imported.reverse(), ...this.entries];
+                                this.progress = 100;
+                                this.addNotification('Data Import', `Successfully synced ${imported.length} records from Excel.`, 'success');
+                                this.persist();
+                                this.view = 'dashboard';
+                                this.importMessage = `✓ Successfully imported ${imported.length} new record(s) from the XLSX file.`;
+                            } else {
+                                this.importMessage = '⚠ No new records found. Data may be empty, missing Owner/Customer, or already imported. Clear data first if starting fresh.';
+                            }
+                        } catch (err) {
+                            const errMsg = err.message || 'Unknown error occurred during import.';
+                            console.error('Import error:', errMsg);
+                            this.importMessage = `✗ Error reading file: ${errMsg}`;
+                            this.addNotification('Import Failed', errMsg, 'warning');
+                        }
+                        this.isLoading = false;
+                            this.importReader = null;
+                        event.target.value = '';
+                        }, 50);
+                    };
+                    reader.readAsArrayBuffer(event.target.files[0]);
+                    }, 50);
+                },
+
+                cancelImport() {
+                    if (this.importReader) {
+                        this.importReader.abort();
+                    }
+                },
+
+                async exportData() {
+                    this.isLoading = true;
+                    this.progress = 5;
+                    await this.yieldToMain();
+
+                    const dataToExport = [];
+                    for (let i = 0; i < this.entries.length; i++) {
+                        const e = this.entries[i];
+                        let row = {};
+                        this.fullHeaders.forEach(h => row[h] = e[h]);
+                        dataToExport.push(row);
+
+                        if (i % 500 === 0) {
+                            this.progress = Math.floor((i / this.entries.length) * 35) + 5;
+                            await this.yieldToMain();
+                        }
+                    }
+
+                    setTimeout(() => {
+                        const ws = XLSX.utils.json_to_sheet(dataToExport);
+                        this.progress = 40;
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, ws, "MasterLedger");
+                        this.progress = 70;
+                        XLSX.writeFile(wb, "AM_Sales_Ledger.xlsx"); 
+                        this.progress = 100;
+                        this.addNotification('Excel Export', 'Full ledger data exported to XLSX file.', 'info');
+                        setTimeout(() => { this.isLoading = false; }, 500);
+                    }, 100);
+                },
+
+                backupDataJSON() {
+                    const data = localStorage.getItem('am_sales_master_v1');
+                    if (!data) return alert('No data to backup!');
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `AM_Sales_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    this.addNotification('System Backup', 'Full database backup saved as JSON.', 'info');
+                },
+
+                async askAI() {
+                    if (!this.aiQuery.trim() || this.aiThinking) return;
+                    
+                    const userMsg = this.aiQuery;
+                    this.aiHistory.push({ id: Date.now(), role: 'user', text: userMsg });
+                    this.aiQuery = '';
+                    this.aiThinking = true;
+
+                    // Build a context summary to help the AI understand current data
+                    const contextSummary = `
+                        Total Revenue: ${this.totals.revenue}, Total Outstanding: ${this.totals.balance},
+                        Owners: ${this.owners.slice(0, 10).join(', ')} (Total ${this.owners.length}),
+                        Top Customers: ${this.summariesByCustomer.slice(0, 5).map(c => c.customer).join(', ')},
+                        Total Entries: ${this.entries.length}.
+                    `;
+
+                    try {
+                        const response = await fetch('/api/ai/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ message: userMsg, context: contextSummary })
+                        });
+                        const data = await response.json();
+                        this.aiHistory.push({ id: Date.now() + 1, role: 'ai', text: data.response });
+                    } catch (e) {
+                        this.aiHistory.push({ id: Date.now() + 1, role: 'ai', text: "Connection error. Please ensure the backend server is running." });
+                    } finally {
+                        this.aiThinking = false;
+                        this.$nextTick(() => {
+                            const el = document.getElementById('ai-chat-history');
+                            el.scrollTop = el.scrollHeight;
+                        });
+                    }
+                },
+
+                formatCurrency(v) {
+                    return new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(v);
+                },
+
+                formatNumber(v) {
+                    if (v === undefined || v === null || v === '' || isNaN(v)) return '0';
+                    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(v);
+                },
+
+                formatDate(dateString) {
+                    if (!dateString || typeof dateString !== 'string' || !dateString.includes('-')) return dateString || '';
+                    const parts = dateString.split('-');
+                    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateString;
+                },
+
+                clearStorage() {
+                    this.isLoading = true;
+                    if(confirm("Erase all data? Export to Excel first!")) {
+                        localStorage.removeItem('am_sales_master_v1');
+                        this.entries = [];
+                        this.owners = [];
+                        this.customers = [];
+                        this.items = [];
+                        this.expenseCategories = [];
+                        this.expenses = [];
+                        this.notifications = [];
+                        this.persist();
+                        this.resetForm();
+                        this.importMessage = 'All data cleared successfully!';
+                        this.view = 'dashboard';
+                        this.isLoading = false;
+                        setTimeout(() => { this.importMessage = ''; }, 3000);
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Notification Drawer -->
+    <div x-show="showNotifications" x-cloak class="fixed inset-0 z-[100] overflow-hidden">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showNotifications = false"></div>
+        <div class="absolute inset-y-0 right-0 max-w-full flex">
+            <div class="w-screen max-w-md" 
+                 x-transition:enter="transform transition ease-in-out duration-300" 
+                 x-transition:enter-start="translate-x-full" 
+                 x-transition:enter-end="translate-x-0" 
+                 x-transition:leave="transform transition ease-in-out duration-300" 
+                 x-transition:leave-start="translate-x-0" 
+                 x-transition:leave-end="translate-x-full">
+                <div class="h-full flex flex-col bg-white shadow-2xl">
+                    <div class="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            Activity Log
+                        </h2>
+                        <button @click="showNotifications = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                        <template x-for="(note, index) in notifications" :key="note.id">
+                            <div class="p-4 rounded-xl border border-slate-100 flex gap-3 transition-all hover:bg-slate-50" :class="note.type === 'success' ? 'bg-emerald-50/30' : note.type === 'warning' ? 'bg-amber-50/30' : 'bg-blue-50/30'">
+                                <div class="flex-shrink-0">
+                                    <template x-if="note.type === 'success'"><svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></template>
+                                    <template x-if="note.type === 'info'"><svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg></template>
+                                    <template x-if="note.type === 'warning'"><svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></template>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <h4 class="text-sm font-bold text-slate-800" x-text="note.title"></h4>
+                                        <span class="text-[10px] text-slate-400 font-medium" x-text="note.time"></span>
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-1" x-text="note.message"></p>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="notifications.length === 0">
+                            <div class="h-64 flex flex-col items-center justify-center text-slate-400 gap-2">
+                                <p class="text-sm font-medium">No recent activity</p>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="p-4 bg-slate-50 border-t border-slate-200" x-show="notifications.length > 0">
+                        <button @click="clearNotifications" class="w-full py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors uppercase tracking-wider">Clear History</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
