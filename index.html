@@ -366,6 +366,29 @@
         }
         .message-user { background: #10b981; color: white; align-self: flex-end; border-radius: 1rem 1rem 0 1rem; }
         .message-ai { background: #f3f7f1; color: #122d24; align-self: flex-start; border-radius: 1rem 1rem 1rem 0; }
+
+        /* Dashboard summaries: keep consistent aspect ratio and equal heights */
+        #dashboard-summaries .glass-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 300px; /* baseline height for reasonable aspect */
+            height: 100%;
+        }
+
+        /* Make the table/list area grow and scroll when content overflows */
+        #dashboard-summaries .glass-card > .overflow-x-auto,
+        #dashboard-summaries .glass-card > .p-4 + .overflow-x-auto {
+            flex: 1 1 auto;
+            min-height: 0; /* allow flex children to shrink properly */
+            overflow: auto;
+        }
+
+        /* On small screens, reduce min-height so cards stack neatly */
+        @media (max-width: 768px) {
+            #dashboard-summaries .glass-card {
+                min-height: 180px;
+            }
+        }
     </style>
 </head>
 <body x-data="ledgerApp()" x-init="init()">
