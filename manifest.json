@@ -1,0 +1,17 @@
+{
+  "name": "AM Sales | Master Ledger v5 Professional",
+  "short_name": "AM Sales v5",
+  "description": "A responsive sales ledger dashboard with Excel export, PDF generation, and analytics.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135706.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
