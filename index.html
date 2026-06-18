@@ -16,6 +16,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
+    <script>
+        // Set API base for server endpoints. If serving server on same origin, leave empty string.
+        // Example: window.__API_BASE = 'https://amfin-server.onrender.com';
+        window.__API_BASE = window.__API_BASE || '';
+    </script>
     <style>
         @keyframes fadeInUp {
             from {
@@ -1417,11 +1422,11 @@
                 editingId: null,
                 editingData: {},
                 charts: { revenue: null, items: null },
-                    // GitHub Cloud Sync Config
-                    githubToken: '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',
+                    // GitHub Cloud Sync via server API (server keeps the PAT)
                     githubOwner: 'narean19-star',
                     githubRepo: 'amfin',
                     githubDataFile: 'data.json',
+                    apiBase: window.__API_BASE || '',
                     githubSHA: null,
                     syncStatus: 'idle', // idle, syncing, success, error, offline
                     lastSyncTime: null,
@@ -1433,21 +1438,12 @@
 
                     async getGitHubFile() {
                         try {
-                            const url = `https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/contents/${this.githubDataFile}`;
-                            const response = await fetch(url, {
-                                headers: { 'Authorization': `token ${this.githubToken}`, 'Accept': 'application/vnd.github.v3.raw' }
-                            });
-                            if (response.status === 404) return { data: null, sha: null };
-                            if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
-                            
-                            const headResponse = await fetch(url, {
-                                headers: { 'Authorization': `token ${this.githubToken}` }
-                            });
-                            const metadata = await headResponse.json();
-                            const content = await response.text();
-                            return { data: JSON.parse(content), sha: metadata.sha };
+                            const resp = await fetch(this.apiBase + '/api/data');
+                            if (!resp.ok) throw new Error('Server error while fetching data');
+                            const json = await resp.json();
+                            return { data: json.data || null, sha: json.sha || null };
                         } catch (error) {
-                            console.error('GitHub read error:', error);
+                            console.error('Server read error:', error);
                             return { data: null, sha: null };
                         }
                     },
@@ -1460,43 +1456,30 @@
 
                         try {
                             this.syncStatus = 'syncing';
-                            const url = `https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/contents/${this.githubDataFile}`;
+                            const url = this.apiBase + '/api/data';
                             const dataStr = JSON.stringify(data, null, 2);
-                            const encoded = btoa(unescape(encodeURIComponent(dataStr)));
                             const timestamp = new Date().toISOString();
-                            const message = `Update ledger data - ${timestamp}`;
-
-                            const payload = {
-                                message,
-                                content: encoded,
-                                branch: 'main'
-                            };
-
-                            if (this.githubSHA) payload.sha = this.githubSHA;
 
                             const response = await fetch(url, {
-                                method: 'PUT',
-                                headers: {
-                                    'Authorization': `token ${this.githubToken}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(payload)
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: dataStr
                             });
 
-                            if (!response.ok) throw new Error(`Push failed: ${response.status}`);
+                            if (!response.ok) throw new Error('Server push failed');
                             const result = await response.json();
-                            this.githubSHA = result.content.sha;
+                            this.githubSHA = result.content && result.content.sha ? result.content.sha : this.githubSHA;
                             this.lastSyncTime = timestamp;
                             this.syncStatus = 'success';
-                            
+
                             // Save to localStorage too
                             localStorage.setItem('am_sales_master_v1', dataStr);
-                            localStorage.setItem('am_sales_github_sha', this.githubSHA);
+                            if (this.githubSHA) localStorage.setItem('am_sales_github_sha', this.githubSHA);
                             localStorage.setItem('am_sales_last_sync', this.lastSyncTime);
-                            
+
                             return true;
                         } catch (error) {
-                            console.error('GitHub push error:', error);
+                            console.error('Server push error:', error);
                             this.syncStatus = 'error';
                             this.syncQueue.push({ data, timestamp: Date.now() });
                             return false;
@@ -1592,7 +1575,7 @@
                         let loadedData = null;
 
                         // 1. Attempt to sync from Cloud Database folder first
-                        const cloudResp = await fetch('/api/data');
+                        const cloudResp = await fetch(this.apiBase + '/api/data');
                         if (cloudResp.ok) {
                             loadedData = await cloudResp.json();
                             if (loadedData && loadedData.entries) {
@@ -1744,7 +1727,7 @@
                     if (!confirm('This will overwrite your local data with cloud data. Are you sure?')) return;
                     this.isLoading = true;
                     try {
-                        const response = await fetch('/api/data');
+                        const response = await fetch(this.apiBase + '/api/data');
                         if (!response.ok) throw new Error('Could not connect to database server.');
                         const cloudData = await response.json();
                         if (cloudData && cloudData.entries) {
