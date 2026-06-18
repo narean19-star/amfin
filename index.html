@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AM Sales Pro v5">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#1f3d2f">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135706.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
@@ -23,7 +23,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(16px);
             }
             to {
                 opacity: 1;
@@ -33,7 +33,7 @@
         @keyframes slideInLeft {
             from {
                 opacity: 0;
-                transform: translateX(-30px);
+                transform: translateX(-24px);
             }
             to {
                 opacity: 1;
@@ -43,7 +43,7 @@
         @keyframes slideInRight {
             from {
                 opacity: 0;
-                transform: translateX(30px);
+                transform: translateX(24px);
             }
             to {
                 opacity: 1;
@@ -60,6 +60,16 @@
                 transform: scale(1);
             }
         }
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
         @keyframes shimmer {
             0% {
                 background-position: -1000px 0;
@@ -70,10 +80,10 @@
         }
         @keyframes glow {
             0%, 100% {
-                box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.18), 0 0 40px rgba(16, 185, 129, 0.1);
             }
             50% {
-                box-shadow: 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.2);
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.28), 0 0 60px rgba(16, 185, 129, 0.16);
             }
         }
         @keyframes float {
@@ -81,7 +91,7 @@
                 transform: translateY(0px);
             }
             50% {
-                transform: translateY(-10px);
+                transform: translateY(-8px);
             }
         }
         @keyframes pulse-slow {
@@ -89,46 +99,53 @@
                 opacity: 1;
             }
             50% {
-                opacity: 0.7;
+                opacity: 0.75;
             }
         }
         
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            color: #0f172a; 
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.15), transparent 24%),
+                        radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), transparent 20%),
+                        linear-gradient(180deg, #f8fbff 0%, #eff6ff 35%, #f4f7f9 100%);
+            color: #0f172a;
             min-height: 100vh;
-            animation: fadeInUp 0.8s ease-out;
+            animation: fadeInUp 0.45s ease-out;
         }
         [x-cloak] { display: none !important; }
-        
+
         .glass-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
-            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(59, 130, 246, 0.12);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+            border-radius: 1rem;
             overflow: hidden;
-            transition: all 0.2s ease-in-out;
-            animation: fadeInUp 0.6s ease-out;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+            animation: popIn 0.32s ease-out both;
+            will-change: transform, opacity;
+            transform-style: preserve-3d;
         }
         .glass-card:hover {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-color: #cbd5e1;
+            box-shadow: 0 24px 58px rgba(15, 23, 42, 0.12);
+            border-color: rgba(37, 99, 235, 0.22);
+            transform: translateY(-3px);
         }
-        
+
         .kpi-card {
-            background: #ffffff;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.75rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
             display: flex;
             position: relative;
             overflow: hidden;
             flex-direction: column;
             justify-content: space-between;
             transition: all 0.2s ease-in-out;
-            animation: scaleIn 0.6s ease-out;
+            animation: popIn 0.3s ease-out;
+            will-change: transform, opacity;
         }
         .kpi-card::before {
             content: '';
@@ -137,36 +154,204 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(90deg, rgba(59, 130, 246, 0.02), transparent);
+            background: linear-gradient(120deg, rgba(59, 130, 246, 0.08), rgba(16, 185, 129, 0.08));
             pointer-events: none;
         }
 
         :root {
-            --primary: #0f172a;
-            --primary-accent: #3b82f6;
-            --muted: #64748b;
-            --bg-soft: #f8fafc;
-            --border: #e2e8f0;
+            --brand-emerald: #10b981;
+            --brand-cobalt: #2563eb;
+            --brand-sunset: #f59e0b;
+            --brand-violet: #8b5cf6;
+            --brand-rose: #ec4899;
+            --brand-slate: #334155;
+            --border-soft: rgba(148, 163, 184, 0.25);
         }
         .data-input {
             width: 100%;
-            padding: 0.625rem 0.875rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
-            background: #ffffff;
+            padding: 0.75rem 0.95rem;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.92);
             color: #0f172a;
             font-weight: 500;
-            font-size: 0.875rem;
-            transition: all 0.15s ease;
+            font-size: 0.95rem;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+            will-change: border-color, box-shadow;
         }
-        .data-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .field-label { font-size: 0.75rem; font-weight: 600; color: #64748b; letter-spacing: 0.025em; text-transform: uppercase; }
-        .nav-btn { display: flex; gap: 0.75rem; align-items: center; padding: 0.75rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.875rem; }
-        .nav-btn:focus, .nav-btn:hover { transform: translateY(-1px); }
+        .data-input:focus {
+            outline: none;
+            border-color: var(--brand-cobalt);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+            background: white;
+        }
+        .field-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #475569;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .nav-btn,
+        .btn-primary,
+        .btn-secondary,
+        .btn-outline,
+        .btn-soft {
+            min-height: 3.1rem;
+            padding: 0.9rem 1.25rem;
+            border-radius: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+            will-change: transform, background-color, box-shadow;
+        }
+        .nav-btn {
+            gap: 0.75rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+        }
+        .nav-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.1);
+        }
+        .btn-primary {
+            background-image: linear-gradient(135deg, var(--brand-emerald), var(--brand-cobalt));
+            color: white;
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.18);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px rgba(16, 185, 129, 0.28);
+            opacity: 0.98;
+        }
+        .btn-secondary {
+            background-image: linear-gradient(135deg, var(--brand-violet), var(--brand-sunset));
+            color: white;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 42px rgba(139, 92, 246, 0.24);
+            opacity: 0.98;
+        }
+        .btn-outline {
+            border: 1px solid rgba(37, 99, 235, 0.18);
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--brand-cobalt);
+        }
+        .btn-outline:hover {
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.14);
+            background: rgba(255, 255, 255, 1);
+        }
+        .btn-block {
+            width: 100%;
+        }
+        .btn-soft {
+            border-radius: 999px;
+            border: 1px solid transparent;
+            background: rgba(59, 130, 246, 0.12);
+            color: #1e40af;
+        }
+        .tab-pill {
+            padding: 0.65rem 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: #334155;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 999px;
+            transition: all 0.2s ease;
+        }
+        .tab-pill.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(16, 185, 129, 0.16));
+            color: #0f172a;
+            border-color: rgba(59, 130, 246, 0.28);
+            box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.08);
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(16, 185, 129, 0.12);
+            color: #047857;
+        }
+        .status-pill--bronze {
+            background: rgba(234, 88, 12, 0.12);
+            color: #d97706;
+        }
+        .status-pill--blue {
+            background: rgba(59, 130, 246, 0.12);
+            color: #1d4ed8;
+        }
+        .status-pill--rose {
+            background: rgba(236, 72, 153, 0.12);
+            color: #be185d;
+        }
+        .metric-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.77) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            animation: popIn 0.22s ease-out both;
+            will-change: transform, opacity;
+        }
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 38px rgba(15, 23, 42, 0.14);
+        }
+        .tab-pill:hover {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+        .color-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.45rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: white;
+        }
+        .color-tag--blue { background: #2563eb; }
+        .color-tag--emerald { background: #10b981; }
+        .color-tag--amber { background: #f59e0b; }
+        .color-tag--pink { background: #ec4899; }
+
+        table th {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(37, 99, 235, 0.08));
+            color: #475569;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        table td {
+            color: #0f172a;
+            font-size: 0.9rem;
+        }
+        table tr:hover { background: rgba(59, 130, 246, 0.06); }
         .kpi-icon { position: absolute; right: 1rem; bottom: 1rem; width: 2rem; height: 2rem; opacity: 0.1; }
-        table th { background: #f8fafc; color: #64748b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        table td { color: #0f172a; font-size: 0.875rem; }
-        .btn-subtle { background: transparent; border: 1px solid #e2e8f0; }
+        table th { background: #f3f7f1; color: #6e7b71; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        table td { color: #122d24; font-size: 0.875rem; }
+        .btn-subtle { background: transparent; border: 1px solid #d4d7d2; }
         /* AI Chat Styles */
         .ai-chat-window {
             position: fixed;
@@ -180,51 +365,51 @@
             background: white;
             border-radius: 1rem;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
+            border: 1px solid #d4d7d2;
         }
-        .message-user { background: #4f46e5; color: white; align-self: flex-end; border-radius: 1rem 1rem 0 1rem; }
-        .message-ai { background: #f1f5f9; color: #1e293b; align-self: flex-start; border-radius: 1rem 1rem 1rem 0; }
+        .message-user { background: #10b981; color: white; align-self: flex-end; border-radius: 1rem 1rem 0 1rem; }
+        .message-ai { background: #f3f7f1; color: #122d24; align-self: flex-start; border-radius: 1rem 1rem 1rem 0; }
     </style>
 </head>
 <body x-data="ledgerApp()" x-init="init()">
 
     <!-- Desktop Sidebar -->
     <aside id="sidebar-desktop" class="fixed inset-y-0 left-0 w-64 bg-slate-900 hidden lg:flex flex-col z-50 shadow-2xl">
-        <div class="p-6 border-b border-slate-800"><h1 class="text-xl font-bold text-white tracking-tight">AM Sales <span class="text-blue-400">v5 Pro</span></h1></div>
+        <div class="p-6 border-b border-slate-800"><h1 class="text-xl font-bold text-white tracking-tight">AM Sales <span class="text-emerald-300">v5 Pro</span></h1></div>
         <nav class="flex-1 px-3 space-y-1 mt-4">
-            <button @click="view = 'dashboard'" :class="view === 'dashboard' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn">
+            <button @click="view = 'dashboard'" :class="view === 'dashboard' ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-xl' : 'text-slate-300 hover:text-white hover:bg-slate-800/90'" class="nav-btn">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                 <span>Dashboard</span>
             </button>
-            <button @click="view = 'records'" :class="view === 'records' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn">
+            <button @click="view = 'records'" :class="view === 'records' ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white shadow-xl' : 'text-slate-300 hover:text-white hover:bg-slate-800/90'" class="nav-btn">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                 <span>Records</span>
             </button>
-            <button @click="view = 'entry'" :class="view === 'entry' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn">
+            <button @click="view = 'entry'" :class="view === 'entry' ? 'bg-gradient-to-r from-sky-500 to-violet-500 text-white shadow-xl' : 'text-slate-300 hover:text-white hover:bg-slate-800/90'" class="nav-btn">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 <span>New Entry</span>
             </button>
-            <button @click="view = 'analysis'" :class="view === 'analysis' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn transition-colors duration-200">
+            <button @click="view = 'analysis'" :class="view === 'analysis' ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-xl' : 'text-slate-300 hover:text-white hover:bg-slate-800/90'" class="nav-btn transition-colors duration-200">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 <span>Analysis</span>
             </button>
-            <button @click="view = 'cashflow'" :class="view === 'cashflow' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'" class="nav-btn">
+            <button @click="view = 'cashflow'" :class="view === 'cashflow' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xl' : 'text-slate-300 hover:text-white hover:bg-slate-800/90'" class="nav-btn">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span>Cashflow</span>
             </button>
         </nav>
         <div class="p-4 space-y-2 border-t border-slate-800">
-            <button @click="$refs.fileInput.click()" class="w-full bg-slate-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-slate-600 transition-colors flex items-center justify-center gap-2">
+            <button @click="$refs.fileInput.click()" class="btn-soft btn-block gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                 Import Excel
             </button>
-            <button @click="exportData" class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2">
+            <button @click="exportData" class="btn-primary btn-block gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Export Excel
             </button>
             <!-- Removed Excel Import input -->
             <!-- <input type="file" x-ref="fileInput" class="hidden" @change="importData"> -->
-            <button @click="backupDataJSON" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+            <button @click="backupDataJSON" class="btn-primary btn-block gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                 Backup JSON
             </button>
@@ -234,15 +419,15 @@
 
     <!-- AI Assistant Floating UI -->
     <div id="ai-assistant" class="fixed bottom-6 right-6 z-[1000]">
-        <button @click="aiOpen = !aiOpen" class="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center animate-glow">
+        <button @click="aiOpen = !aiOpen" class="w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-all flex items-center justify-center animate-glow">
             <svg x-show="!aiOpen" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
             <svg x-show="aiOpen" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
         <div x-show="aiOpen" x-cloak class="ai-chat-window flex flex-col overflow-hidden" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90 translate-y-10" x-transition:enter-end="opacity-100 scale-100 translate-y-0">
-            <div class="p-4 bg-indigo-600 text-white flex justify-between items-center">
+            <div class="p-4 bg-emerald-600 text-white flex justify-between items-center">
                 <span class="font-bold text-sm">Gemini AI Assistant</span>
-                <span class="text-[10px] bg-indigo-500 px-2 py-0.5 rounded-full">v5 Pro</span>
+                <span class="text-[10px] bg-emerald-500 px-2 py-0.5 rounded-full">v5 Pro</span>
             </div>
             <div class="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]" id="ai-chat-history">
                 <div class="message-ai p-3 text-xs">
@@ -254,8 +439,8 @@
                 <div x-show="aiThinking" class="text-[10px] text-slate-400 italic">Gemini is thinking...</div>
             </div>
             <div class="p-3 border-t border-slate-100 bg-slate-50 flex gap-2">
-                <input type="text" x-model="aiQuery" @keydown.enter="askAI" placeholder="Ask anything..." class="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
-                <button @click="askAI" class="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition">
+                <input type="text" x-model="aiQuery" @keydown.enter="askAI" placeholder="Ask anything..." class="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500">
+                <button @click="askAI" class="bg-emerald-600 text-white p-2 rounded-lg hover:bg-emerald-700 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
@@ -265,16 +450,16 @@
     <!-- Loading Overlay -->
     <div x-show="isLoading" x-cloak class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300" x-transition:enter="opacity-0" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="opacity-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div class="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center gap-4 animate-pulse-slow">
-            <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin h-10 w-10 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             <div class="text-center space-y-2">
                 <p class="text-slate-700 font-semibold">Processing your request...</p>
                 <div class="w-64 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
-                    <div class="bg-blue-600 h-full transition-all duration-300 ease-out" 
+                    <div class="bg-emerald-600 h-full transition-all duration-300 ease-out" 
                          :style="`width: ${progress}%`"
-                         :class="progress === 100 ? 'bg-emerald-500' : 'bg-blue-600'"></div>
+                         :class="progress === 100 ? 'bg-emerald-500' : 'bg-emerald-600'"></div>
                 </div>
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" x-text="`${progress}% Complete`"></p>
                 <button x-show="importReader" @click="cancelImport" class="mt-4 px-4 py-2 bg-rose-100 text-rose-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-rose-200 transition-colors">
@@ -289,29 +474,29 @@
         <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="mobileMenuOpen = false"></div>
         <nav class="relative bg-white w-72 h-full p-6 shadow-2xl flex flex-col">
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-lg font-bold text-slate-800">AM Sales <span class="text-blue-600">Pro</span></h1>
+                <h1 class="text-lg font-bold text-slate-800">AM Sales <span class="text-emerald-600">Pro</span></h1>
                 <button @click="mobileMenuOpen = false" class="text-slate-400 hover:text-slate-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
             <div class="space-y-1 flex-1">
-                <button @click="view = 'dashboard'; mobileMenuOpen = false" :class="view === 'dashboard' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
+                <button @click="view = 'dashboard'; mobileMenuOpen = false" :class="view === 'dashboard' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     <span>Dashboard</span>
                 </button>
-                <button @click="view = 'records'; mobileMenuOpen = false" :class="view === 'records' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
+                <button @click="view = 'records'; mobileMenuOpen = false" :class="view === 'records' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                     <span>Records</span>
                 </button>
-                <button @click="view = 'entry'; mobileMenuOpen = false" :class="view === 'entry' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
+                <button @click="view = 'entry'; mobileMenuOpen = false" :class="view === 'entry' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     <span>New Entry</span>
                 </button>
-                <button @click="view = 'analysis'; mobileMenuOpen = false" :class="view === 'analysis' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors duration-200">
+                <button @click="view = 'analysis'; mobileMenuOpen = false" :class="view === 'analysis' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors duration-200">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     <span>Business Analysis</span>
                 </button>
-                <button @click="view = 'cashflow'; mobileMenuOpen = false" :class="view === 'cashflow' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
+                <button @click="view = 'cashflow'; mobileMenuOpen = false" :class="view === 'cashflow' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center px-4 py-3 rounded-lg font-medium text-sm space-x-3 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span>Cashflow</span>
                 </button>
@@ -344,7 +529,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-4">
-                <button @click="showNotifications = !showNotifications" class="relative p-2 text-slate-500 hover:text-blue-600 transition-colors">
+                <button @click="showNotifications = !showNotifications" class="relative p-2 text-slate-500 hover:text-emerald-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                     </svg>
@@ -363,91 +548,170 @@
 
                 <!-- iPhone / Mobile Connection Helper -->
                 <template x-if="serverUrl">
-                    <div class="glass-card p-4 bg-indigo-50 border-indigo-200 flex items-center justify-between animate-float">
+                    <div class="glass-card p-4 bg-emerald-50 border-emerald-200 flex items-center justify-between animate-float">
                         <div class="flex items-center gap-3">
-                            <div class="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+                            <div class="p-2 bg-emerald-100 rounded-lg text-emerald-600">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             </div>
                             <div>
-                                <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">iPhone / Mobile Access</p>
-                                <p class="text-sm font-medium text-slate-700">Open Safari and visit: <span class="font-bold text-indigo-700 underline" x-text="serverUrl"></span></p>
+                                <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">iPhone / Mobile Access</p>
+                                <p class="text-sm font-medium text-slate-700">Open Safari and visit: <span class="font-bold text-emerald-700 underline" x-text="serverUrl"></span></p>
                             </div>
                         </div>
-                        <p class="text-[10px] text-indigo-400 font-medium hidden md:block italic">Ensure iPhone is on the same Wi-Fi</p>
+                        <p class="text-[10px] text-emerald-400 font-medium hidden md:block italic">Ensure iPhone is on the same Wi-Fi</p>
                     </div>
                 </template>
 
-                <!-- Visual Analytics Section -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- ERP Overview Hero -->
+                <div class="grid gap-6 xl:grid-cols-[2fr_1fr]">
                     <div class="glass-card p-6">
-                        <h3 class="text-sm font-semibold mb-4 text-slate-700">Revenue vs Outstanding Trend</h3>
-                        <canvas id="revenueChart" height="150"></canvas>
+                        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                            <div class="max-w-2xl">
+                                <p class="text-xs uppercase tracking-[0.24em] text-emerald-600">Business Overview</p>
+                                <h2 class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Integrated Operations Dashboard</h2>
+                                <p class="mt-3 text-sm leading-6 text-slate-500">Monitor revenue, operational throughput, cash health, and outstanding balances from one executive view.</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 w-full lg:w-auto">
+                                <div class="metric-card rounded-3xl p-4">
+                                    <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Revenue</p>
+                                    <p class="mt-3 text-xl font-semibold text-slate-900" x-text="formatCurrency(totals.revenue)"></p>
+                                    <span class="status-pill status-pill--blue mt-3 inline-block">Top performance</span>
+                                </div>
+                                <div class="metric-card rounded-3xl p-4">
+                                    <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Net Weight</p>
+                                    <p class="mt-3 text-xl font-semibold text-slate-900" x-text="formatNumber(totals.weight) + ' KG'"></p>
+                                    <span class="status-pill mt-3 inline-block">High volume</span>
+                                </div>
+                                <div class="metric-card rounded-3xl p-4">
+                                    <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Outstanding</p>
+                                    <p class="mt-3 text-xl font-semibold text-rose-600" x-text="formatCurrency(totals.balance)"></p>
+                                    <span class="status-pill status-pill--bronze mt-3 inline-block">Priority follow-up</span>
+                                </div>
+                                <div class="metric-card rounded-3xl p-4">
+                                    <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Transactions</p>
+                                    <p class="mt-3 text-xl font-semibold text-slate-900" x-text="entries.length"></p>
+                                    <span class="status-pill status-pill--pink mt-3 inline-block">Live records</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 grid gap-6 lg:grid-cols-2">
+                            <div class="rounded-3xl bg-slate-50 border border-slate-200 p-5">
+                                <div class="flex items-center justify-between gap-4 mb-4">
+                                    <div>
+                                        <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Revenue Trend</p>
+                                        <p class="text-sm text-slate-500">Revenue vs outstanding balance by month.</p>
+                                    </div>
+                                    <span class="status-pill status-pill--blue">Live</span>
+                                </div>
+                                <canvas id="revenueChart" height="180"></canvas>
+                            </div>
+                            <div class="rounded-3xl bg-slate-50 border border-slate-200 p-5">
+                                <div class="flex items-center justify-between gap-4 mb-4">
+                                    <div>
+                                        <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Top Items</p>
+                                        <p class="text-sm text-slate-500">Leading item volumes for the current period.</p>
+                                    </div>
+                                    <span class="status-pill status-pill--rose">KG</span>
+                                </div>
+                                <canvas id="itemStockChart" height="180"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    <div class="glass-card p-6">
-                        <h3 class="text-sm font-semibold mb-4 text-slate-700">Top Items by Weight</h3>
-                        <canvas id="itemStockChart" height="150"></canvas>
+                    <div class="glass-card p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Operational Snapshot</p>
+                                    <h3 class="mt-3 text-xl font-semibold text-slate-900">Actionable insights</h3>
+                                </div>
+                                <button @click="updateCharts()" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">Refresh</button>
+                            </div>
+                            <div class="mt-6 space-y-4">
+                                <div class="rounded-3xl bg-white border border-slate-200 p-4">
+                                    <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Top Owner</p>
+                                    <p class="mt-2 text-sm font-semibold text-slate-900" x-text="summariesByOwner.length ? summariesByOwner[0].owner : 'N/A'"></p>
+                                    <p class="text-xs text-slate-500" x-text="summariesByOwner.length ? formatCurrency(summariesByOwner[0].revenue) : ''"></p>
+                                </div>
+                                <div class="rounded-3xl bg-white border border-slate-200 p-4">
+                                    <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Top Customer</p>
+                                    <p class="mt-2 text-sm font-semibold text-slate-900" x-text="summariesByCustomer.length ? summariesByCustomer[0].customer : 'N/A'"></p>
+                                    <p class="text-xs text-slate-500" x-text="summariesByCustomer.length ? formatCurrency(summariesByCustomer[0].revenue) : ''"></p>
+                                </div>
+                                <div class="rounded-3xl bg-white border border-slate-200 p-4">
+                                    <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Outstanding Debtors</p>
+                                    <p class="mt-2 text-sm font-semibold text-rose-600" x-text="summariesByOutstanding.length"></p>
+                                    <p class="text-xs text-slate-500">High-risk accounts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 grid gap-3">
+                            <button @click="view='entry'" class="btn-primary btn-block">Add New Entry</button>
+                            <button @click="$refs.fileInput.click()" class="btn-secondary btn-block">Import Data</button>
+                            <button @click="exportData" class="btn-outline btn-block">Export Excel</button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Bill Search Bar -->
-                <div id="dashboard-search" class="glass-card p-4">
-                    <div class="flex flex-col md:flex-row gap-4 items-end">
-                        <div class="flex-1 transition-all duration-200">
-                            <label class="field-label">Quick Search by Bill No</label>
-                            <div class="relative">
-                                <input type="text" x-model="billSearchQuery" @input="debounceFindBill" placeholder="Enter Bill Number (e.g. 3676)..." class="data-input">
-                                <svg class="absolute right-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </div>
-                        </div>
-                    </div>
-                    <template x-if="foundEntry">
-                        <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 flex-1">
-                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Date/Bill</p><p class="text-sm font-medium" x-text="formatDate(foundEntry.Date) + ' / #' + foundEntry['Bill No']"></p></div>
-                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Owner/Cust</p><p class="text-sm font-medium" x-text="foundEntry.Owner + ' → ' + foundEntry.Customer"></p></div>
-                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Item</p><p class="text-sm font-medium" x-text="foundEntry.Item"></p></div>
-                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Net KG</p><p class="text-sm font-medium text-blue-600" x-text="foundEntry['N.Kilo'] + ' kg'"></p></div>
-                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Total</p><p class="text-sm font-medium text-emerald-600" x-text="formatCurrency(foundEntry['C.Amount'])"></p></div>
-                            </div>
-                            <div class="flex gap-2 w-full md:w-auto">
-                                <button @click="loadFoundIntoForm" class="flex-1 md:flex-none bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200">Load to Entry</button>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Date Range Filter -->
-                <div id="dashboard-date-filter" class="glass-card p-4">
-                    <div class="flex flex-col md:flex-row gap-4 items-end">
-                        <!-- Consolidated Report Mode Toggle -->
-                        <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 mb-4 md:mb-0">
-                            <span class="text-[10px] font-semibold text-slate-500 uppercase px-2">Print Layout</span>
-                            <div class="flex bg-white rounded-md p-1 shadow-sm border border-slate-200">
-                                <button @click="reportMode = 'summary'" :class="reportMode === 'summary' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-800'" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Summary</button>
-                                <button @click="reportMode = 'compact'" :class="reportMode === 'compact' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-800'" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Compact</button>
-                                <button @click="reportMode = 'detail'" :class="reportMode === 'detail' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-800'" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Detail</button>
-                            </div>
-                        </div>
-
-                        <div class="flex-1 grid grid-cols-2 gap-4 transition-all duration-200">
+                <!-- Quick Search & Filters -->
+                <div class="glass-card p-6">
+                    <div class="grid gap-6 xl:grid-cols-[2fr_1fr]">
+                        <div class="space-y-4">
                             <div>
-                                <label class="field-label">Start Date</label>
-                                <input type="date" x-model="startDate" class="data-input">
+                                <label class="field-label">Quick Search</label>
+                                <div class="relative mt-2">
+                                    <input type="text" x-model="billSearchQuery" @input="debounceFindBill" placeholder="Search Bill No, Owner, Customer or Item..." class="data-input pr-12">
+                                    <svg class="absolute right-3 top-3 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
                             </div>
-                            <div>
-                                <label class="field-label">End Date</label>
-                                <input type="date" x-model="endDate" class="data-input">
+
+                            <template x-if="foundEntry">
+                                <div class="rounded-3xl bg-slate-50 border border-slate-200 p-4 shadow-sm">
+                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                        <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Date / Bill</p><p class="mt-1 text-sm font-medium" x-text="formatDate(foundEntry.Date) + ' / #' + foundEntry['Bill No']"></p></div>
+                                        <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Owner / Cust</p><p class="mt-1 text-sm font-medium" x-text="foundEntry.Owner + ' → ' + foundEntry.Customer"></p></div>
+                                        <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Item</p><p class="mt-1 text-sm font-medium" x-text="foundEntry.Item"></p></div>
+                                        <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Net KG</p><p class="mt-1 text-sm font-medium text-emerald-600" x-text="foundEntry['N.Kilo'] + ' kg'"></p></div>
+                                        <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Total</p><p class="mt-1 text-sm font-medium text-emerald-600" x-text="formatCurrency(foundEntry['C.Amount'])"></p></div>
+                                    </div>
+                                    <div class="mt-4 flex justify-end">
+                                        <button @click="loadFoundIntoForm" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition">Load to Entry</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="grid gap-4">
+                            <div class="rounded-3xl bg-slate-50 border border-slate-200 p-4">
+                                <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Date Range</p>
+                                <div class="grid gap-4 mt-3">
+                                    <div>
+                                        <label class="field-label">Start Date</label>
+                                        <input type="date" x-model="startDate" class="data-input">
+                                    </div>
+                                    <div>
+                                        <label class="field-label">End Date</label>
+                                        <input type="date" x-model="endDate" class="data-input">
+                                    </div>
+                                </div>
+                                <button @click="startDate = ''; endDate = '';" x-show="startDate || endDate" class="mt-4 w-full text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-lg px-4 py-2 hover:bg-emerald-50 transition">Clear Dates</button>
+                            </div>
+                            <div class="rounded-3xl bg-slate-50 border border-slate-200 p-4">
+                                <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">Report Mode</p>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    <button @click="reportMode = 'summary'" :class="reportMode === 'summary' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200'" class="px-3 py-1.5 rounded-full text-xs font-medium transition">Summary</button>
+                                    <button @click="reportMode = 'compact'" :class="reportMode === 'compact' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200'" class="px-3 py-1.5 rounded-full text-xs font-medium transition">Compact</button>
+                                    <button @click="reportMode = 'detail'" :class="reportMode === 'detail' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200'" class="px-3 py-1.5 rounded-full text-xs font-medium transition">Detail</button>
+                                </div>
                             </div>
                         </div>
-                        <button @click="startDate = ''; endDate = ''" x-show="startDate || endDate" class="text-xs font-medium text-red-500 hover:text-red-700 px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50 transition-colors duration-200">Clear Dates</button>
                     </div>
                 </div>
 
                 <div id="dashboard-kpis" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="kpi-card border-l-4 border-l-blue-500">
+                    <div class="kpi-card border-l-4 border-l-emerald-500">
                         <p class="field-label">Total Revenue</p>
                         <p class="text-2xl font-semibold text-slate-900" x-text="formatCurrency(totals.revenue)"></p>
-                        <svg class="kpi-icon text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <svg class="kpi-icon text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                     <div class="kpi-card border-l-4 border-l-emerald-500">
                         <p class="field-label">Total Net Weight</p>
@@ -461,7 +725,7 @@
                     </div>
                 </div>
                 <template x-if="importMessage">
-                    <div class="mt-6 p-5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold">
+                    <div class="mt-6 p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold">
                         <span x-text="importMessage"></span>
                     </div>
                 </template>
@@ -475,7 +739,7 @@
                                     if (reportMode === 'summary') printSummaryReport('Owner Summary Report', summariesByOwner, 'owner');
                                     else if (reportMode === 'compact') printCompactDetailedReport('Owner Detail Report (Compact)', 'Owner', searchOwnerSummary);
                                     else printDetailedReport('Owner Detail Report (Full)', 'Owner', searchOwnerSummary)
-                                " class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                                " class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 transition font-medium flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                     Print <span x-text="reportMode"></span>
                                 </button>
@@ -498,10 +762,10 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     <template x-for="summary in summariesByOwner" :key="summary.owner">
-                                        <tr class="hover:bg-blue-50/30 transition">
+                                        <tr class="hover:bg-emerald-50/30 transition">
                                             <td class="p-3 text-xs font-bold text-slate-900" x-text="summary.owner"></td>
                                             <td class="p-3 text-xs font-medium" x-text="summary.count"></td>
-                                            <td class="p-3 text-xs font-bold text-blue-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
+                                            <td class="p-3 text-xs font-bold text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
                                             <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.aAmount)"></td>
                                             <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cash)"></td>
                                             <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cheque)"></td>
@@ -522,7 +786,7 @@
                                     if (reportMode === 'summary') printSummaryReport('Customer Summary Report', summariesByCustomer, 'customer');
                                     else if (reportMode === 'compact') printCompactDetailedReport('Customer Detail Report (Compact)', 'Customer', searchCustomerSummary);
                                     else printDetailedReport('Customer Detail Report (Full)', 'Customer', searchCustomerSummary)
-                                " class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                                " class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 transition font-medium flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                     Print <span x-text="reportMode"></span>
                                 </button>
@@ -545,10 +809,10 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     <template x-for="summary in summariesByCustomer" :key="summary.customer">
-                                        <tr class="hover:bg-blue-50/30 transition">
+                                        <tr class="hover:bg-emerald-50/30 transition">
                                             <td class="p-3 text-xs font-bold text-slate-900" x-text="summary.customer"></td>
                                             <td class="p-3 text-xs font-medium" x-text="summary.count"></td>
-                                            <td class="p-3 text-xs font-bold text-blue-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
+                                            <td class="p-3 text-xs font-bold text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
                                             <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.aAmount)"></td>
                                             <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cash)"></td>
                                             <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cheque)"></td>
@@ -569,7 +833,7 @@
                                     if (reportMode === 'summary') printSummaryReport('Item Summary Report', summariesByItem, 'item');
                                     else if (reportMode === 'compact') printCompactDetailedReport('Item Detail Report (Compact)', 'Item', searchItemSummary);
                                     else printDetailedReport('Item Detail Report (Full)', 'Item', searchItemSummary)
-                                " class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                                " class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 transition font-medium flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                     Print <span x-text="reportMode"></span>
                                 </button>
@@ -592,10 +856,10 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     <template x-for="summary in summariesByItem" :key="summary.item">
-                                        <tr class="hover:bg-blue-50/30 transition">
+                                        <tr class="hover:bg-emerald-50/30 transition">
                                             <td class="p-3 text-xs font-bold text-slate-900" x-text="summary.item"></td>
                                             <td class="p-3 text-xs font-medium" x-text="summary.count"></td>
-                                            <td class="p-3 text-xs font-bold text-blue-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
+                                            <td class="p-3 text-xs font-bold text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
                                             <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.aAmount)"></td>
                                             <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cash)"></td>
                                             <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cheque)"></td>
@@ -639,10 +903,10 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     <template x-for="summary in summariesByOutstanding" :key="summary.owner">
-                                        <tr class="hover:bg-blue-50/30 transition">
+                                        <tr class="hover:bg-emerald-50/30 transition">
                                             <td class="p-3 text-xs font-bold text-slate-900" x-text="summary.owner"></td>
                                             <td class="p-3 text-xs font-medium" x-text="summary.count"></td>
-                                            <td class="p-3 text-xs font-bold text-blue-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
+                                            <td class="p-3 text-xs font-bold text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.revenue)"></td>
                                             <td class="p-3 text-xs font-medium text-right tabular-nums" x-text="formatNumber(summary.aAmount)"></td>
                                             <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cash)"></td>
                                             <td class="p-3 text-xs font-medium text-emerald-600 text-right tabular-nums" x-text="formatNumber(summary.cheque)"></td>
@@ -682,7 +946,7 @@
                     <div id="records-header" class="p-4 border-b border-slate-200 flex justify-between items-center">
                         <h3 class="font-semibold text-sm">Master Ledger (<span x-text="filteredEntries.length"></span> Records)</h3>
                         <div class="flex gap-3 items-center">
-                            <button @click="reportMode === 'summary' ? printSummaryReport('Master Ledger Summary', summariesByOwner, 'owner') : (reportMode === 'compact' ? printCompactDetailedReport('Master Ledger (Compact)', '', '') : printDetailedReport('Master Ledger (Full)', '', ''))" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                            <button @click="reportMode === 'summary' ? printSummaryReport('Master Ledger Summary', summariesByOwner, 'owner') : (reportMode === 'compact' ? printCompactDetailedReport('Master Ledger (Compact)', '', '') : printDetailedReport('Master Ledger (Full)', '', ''))" class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 transition font-medium flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                 Print Ledger
                             </button>
@@ -701,12 +965,12 @@
                             </thead>
                             <tbody class="divide-y divide-slate-200">
                                 <template x-for="entry in filteredEntries" :key="entry.id">
-                                    <tr :class="editingId === entry.id ? 'bg-blue-100/50 border-2 border-indigo-400' : 'hover:bg-blue-50/30 transition'">
+                                    <tr :class="editingId === entry.id ? 'bg-emerald-100/50 border-2 border-emerald-400' : 'hover:bg-emerald-50/30 transition'">
                                         <template x-for="head in fullHeaders">
                                             <td class="p-4 text-xs font-medium border-r border-slate-100"
                                                 :class="{
                                                     'font-black text-slate-900 bg-slate-50/20': head === 'Owner' || head === 'Customer',
-                                                    'text-blue-600 font-bold': head === 'C.Amount',
+                                                    'text-emerald-600 font-bold': head === 'C.Amount',
                                                     'text-rose-500 font-bold': head === 'Balance' && entry.Balance > 0,
                                                     'bg-emerald-50/20': head === 'Item',
                                                     'text-center': head === 'Source',
@@ -718,12 +982,12 @@
                                                             <input type="number" step="0.01"
                                                                    x-model.number="editingData[head]"
                                                                    @input="calcNet(editingData)"
-                                                                   class="w-full px-2 py-1 border border-indigo-400 rounded text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                                                                   class="w-full px-2 py-1 border border-emerald-400 rounded text-xs bg-white focus:ring-2 focus:ring-emerald-500">
                                                         </template>
                                                         <template x-if="!['Pkgs', 'P.Kilo', 'G.Kilo', 'Tare', 'Rate', 'A.Amount', 'Cash', 'Cheque', 'Credit Given', 'Credit Received', 'Kooli', 'N.Kilo', 'C.Amount', 'Balance'].includes(head)">
                                                             <input type="text" 
                                                                    x-model="editingData[head]"
-                                                                   class="w-full px-2 py-1 border border-indigo-400 rounded text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                                                                   class="w-full px-2 py-1 border border-emerald-400 rounded text-xs bg-white focus:ring-2 focus:ring-emerald-500">
                                                         </template>
                                                         <template x-if="['N.Kilo', 'C.Amount', 'Balance'].includes(head)">
                                                             <span x-text="formatNumber(editingData[head])"></span>
@@ -736,13 +1000,13 @@
                                                     </template>
                                                     <template x-if="head === 'Source'">
                                                         <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-tighter"
-                                                              :class="entry.Source === 'Import' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'"
+                                                              :class="entry.Source === 'Import' ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-100 text-emerald-700'"
                                                               x-text="entry.Source || 'Manual'"></span>
                                                     </template>
                                                 </template>
                                                 <template x-if="editingId === entry.id && head === 'Source'">
                                                     <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-tighter"
-                                                          :class="editingData.Source === 'Import' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'"
+                                                          :class="editingData.Source === 'Import' ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-100 text-emerald-700'"
                                                           x-text="editingData.Source || 'Manual'"></span>
                                                 </template>
                                             </td>
@@ -754,7 +1018,7 @@
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                                         Print
                                                     </button>
-                                                    <button @click="startInlineEdit(entry)" class="text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors border border-blue-200 font-medium flex items-center gap-1">
+                                                    <button @click="startInlineEdit(entry)" class="text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors border border-emerald-200 font-medium flex items-center gap-1">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                                         Edit
                                                     </button>
@@ -813,11 +1077,11 @@
                     <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 transition-all duration-200 hover:shadow-md">
                             <p class="text-[10px] font-bold text-slate-500 uppercase">Owner Total (C.Amount)</p>
-                            <p class="text-xl font-bold text-blue-600" x-text="formatCurrency(analysisResult.ownerC)"></p>
+                            <p class="text-xl font-bold text-emerald-600" x-text="formatCurrency(analysisResult.ownerC)"></p>
                         </div>
                         <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 transition-all duration-200 hover:shadow-md">
                             <p class="text-[10px] font-bold text-slate-500 uppercase">Customer Total (A.Amount)</p>
-                            <p class="text-xl font-bold text-indigo-600" x-text="formatCurrency(analysisResult.customerA)"></p>
+                            <p class="text-xl font-bold text-emerald-600" x-text="formatCurrency(analysisResult.customerA)"></p>
                         </div>
                         <div class="p-4 rounded-lg border transition-all duration-200 hover:shadow-md" :class="analysisResult.diff >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'">
                             <p class="text-[10px] font-bold uppercase" :class="analysisResult.diff >= 0 ? 'text-emerald-600' : 'text-rose-600'">Net Position (Difference)</p>
@@ -872,7 +1136,7 @@
                         <div><label class="field-label">Amount</label><input type="number" x-model.number="expenseForm.amount" class="data-input" required></div>
                     </div>
                     <div class="mt-4 flex gap-2">
-                        <button @click="saveExpense" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition" x-text="expenseForm.id ? 'Update Entry' : 'Add Entry'"></button>
+                        <button @click="saveExpense" class="bg-emerald-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition" x-text="expenseForm.id ? 'Update Entry' : 'Add Entry'"></button>
                         <button x-show="expenseForm.id" @click="resetExpenseForm" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors duration-200">Cancel</button>
                     </div>
                 </div>
@@ -902,7 +1166,7 @@
                                         <td class="p-4 text-xs text-right font-bold text-rose-500 tabular-nums" x-text="formatCurrency(ex.amount)"></td>
                                         <td class="p-4 text-xs text-center">
                                             <div class="flex justify-center gap-4">
-                                                <button @click="editExpense(ex)" class="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200">Edit</button>
+                                                <button @click="editExpense(ex)" class="text-emerald-600 hover:text-emerald-800 font-medium transition-colors duration-200">Edit</button>
                                                 <button @click="deleteExpense(ex.id)" class="text-rose-600 hover:text-rose-800 font-medium transition-colors duration-200">Delete</button>
                                             </div>
                                         </td>
@@ -935,10 +1199,10 @@
                                 <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Date/Bill</p><p class="text-sm font-medium" x-text="foundEntry.Date + ' / #' + foundEntry['Bill No']"></p></div>
                                 <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Owner/Cust</p><p class="text-sm font-medium" x-text="foundEntry.Owner + ' → ' + foundEntry.Customer"></p></div>
                                 <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Item</p><p class="text-sm font-medium" x-text="foundEntry.Item"></p></div>
-                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Net/Total</p><p class="text-sm font-medium text-blue-600" x-text="formatNumber(foundEntry['N.Kilo']) + 'kg / ' + formatCurrency(foundEntry['C.Amount'])"></p></div>
+                                <div><p class="text-[10px] font-semibold text-slate-500 uppercase">Net/Total</p><p class="text-sm font-medium text-emerald-600" x-text="formatNumber(foundEntry['N.Kilo']) + 'kg / ' + formatCurrency(foundEntry['C.Amount'])"></p></div>
                             </div>
                             <div class="ml-4 flex gap-2">
-                                <button @click="loadFoundIntoForm" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">Load Data</button>
+                                <button @click="loadFoundIntoForm" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition">Load Data</button>
                                 <button @click="billSearchQuery = ''; foundEntry = null" class="text-slate-400 hover:text-slate-600">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
@@ -951,7 +1215,7 @@
                     <div id="select-owner" class="glass-card p-6 relative">
                         <h4 class="text-xs font-semibold mb-4 text-slate-500 uppercase tracking-wide">Select Owner</h4>
                         <div class="flex justify-between items-center mb-4">
-                            <button @click="isNewOwner = !isNewOwner" class="text-xs font-medium text-blue-600 uppercase tracking-wide hover:text-blue-700 transition-colors" x-text="isNewOwner ? 'Back to List' : '+ Create New'"></button>
+                            <button @click="isNewOwner = !isNewOwner" class="text-xs font-medium text-emerald-600 uppercase tracking-wide hover:text-emerald-700 transition-colors" x-text="isNewOwner ? 'Back to List' : '+ Create New'"></button>
                         </div>
                         <div x-show="!isNewOwner" class="relative">
                             <select x-model="form.Owner" class="data-input">
@@ -967,7 +1231,7 @@
                     <div id="select-customer" class="glass-card p-6 relative">
                         <h4 class="text-xs font-semibold mb-4 text-slate-500 uppercase tracking-wide">Select Customer</h4>
                         <div class="flex justify-between items-center mb-4">
-                            <button @click="isNewCust = !isNewCust" class="text-xs font-medium text-blue-600 uppercase tracking-wide hover:text-blue-700 transition-colors" x-text="isNewCust ? 'Back to List' : '+ Create New'"></button>
+                            <button @click="isNewCust = !isNewCust" class="text-xs font-medium text-emerald-600 uppercase tracking-wide hover:text-emerald-700 transition-colors" x-text="isNewCust ? 'Back to List' : '+ Create New'"></button>
                         </div>
                         <div x-show="!isNewCust" class="relative">
                             <select x-model="form.Customer" class="data-input">
@@ -990,7 +1254,7 @@
                         <div class="col-span-2 md:col-span-1 relative">
                             <div class="flex justify-between items-center mb-1">
                                 <label class="field-label mb-0">Item</label>
-                                <button @click="isNewItem = !isNewItem" class="text-xs font-medium text-blue-600 uppercase hover:text-blue-700 transition-colors" x-text="isNewItem ? 'List' : '+ New'"></button>
+                                <button @click="isNewItem = !isNewItem" class="text-xs font-medium text-emerald-600 uppercase hover:text-emerald-700 transition-colors" x-text="isNewItem ? 'List' : '+ New'"></button>
                             </div>
                             <div x-show="!isNewItem" class="relative">
                                 <select x-model="form.Item" class="data-input">
@@ -1013,7 +1277,7 @@
                         <div><label class="field-label">PKGS</label><input type="number" x-model.number="form.Pkgs" @input="calcNet(form)" class="data-input"></div>
                         <div><label class="field-label">Gross KG</label><input type="number" step="0.01" x-model.number="form['G.Kilo']" @input="calcNet(form)" class="data-input"></div>
                         <div><label class="field-label">Tare</label><input type="number" step="0.01" x-model.number="form.Tare" @input="calcNet(form)" class="data-input"></div>
-                        <div><label class="field-label text-blue-600">Net KG</label><input type="number" step="0.01" x-model.number="form['N.Kilo']" class="data-input bg-blue-50/50" readonly></div>
+                        <div><label class="field-label text-emerald-600">Net KG</label><input type="number" step="0.01" x-model.number="form['N.Kilo']" class="data-input bg-emerald-50/50" readonly></div>
                         <div><label class="field-label">P.Kilo</label><input type="number" step="0.01" x-model.number="form['P.Kilo']" @input="calcNet(form)" class="data-input"></div>
                         <div><label class="field-label">Kooli</label><input type="number" x-model.number="form.Kooli" class="data-input bg-slate-50" readonly></div>
                     </div>
@@ -1024,7 +1288,7 @@
                     <h4 class="text-sm font-semibold mb-4 text-slate-700">Financial</h4>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div><label class="field-label">Rate</label><input type="number" step="0.01" x-model.number="form.Rate" @input="calcAmount(form)" class="data-input"></div>
-                        <div><label class="field-label text-blue-600">C.Amount</label><input type="number" x-model.number="form['C.Amount']" class="data-input bg-blue-50 border-blue-200" readonly></div>
+                        <div><label class="field-label text-emerald-600">C.Amount</label><input type="number" x-model.number="form['C.Amount']" class="data-input bg-emerald-50 border-emerald-200" readonly></div>
                         <div><label class="field-label text-slate-600">A.Amount</label><input type="number" step="0.01" x-model.number="form['A.Amount']" @input="calcAmount(form)" class="data-input bg-slate-50"></div>
                         <div><label class="field-label">Cash Received</label><input type="number" step="0.01" x-model.number="form.Cash" @input="calcAmount(form)" class="data-input"></div>
                         <div><label class="field-label">Cheque Received</label><input type="number" step="0.01" x-model.number="form.Cheque" @input="calcAmount(form)" class="data-input"></div>
@@ -1039,7 +1303,7 @@
                         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Transaction Balance</p>
                         <p class="text-4xl font-semibold text-white" x-text="formatCurrency(form.Balance)"></p>
                     </div>
-                    <button @click="saveEntry" class="w-full md:w-72 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-sm transition-colors">Commit Transaction</button>
+                    <button @click="saveEntry" class="w-full md:w-72 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-semibold text-sm transition-colors">Commit Transaction</button>
                 </div>
             </div>
         </div>
@@ -1360,7 +1624,7 @@
                         data: {
                             labels: labels,
                             datasets: [
-                                { label: 'Revenue', data: labels.map(l => monthlyData[l].rev), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 },
+                                { label: 'Revenue', data: labels.map(l => monthlyData[l].rev), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', fill: true, tension: 0.4 },
                                 { label: 'Outstanding', data: labels.map(l => monthlyData[l].bal), borderColor: '#f43f5e', borderDash: [5, 5], tension: 0.4 }
                             ]
                         },
@@ -1616,93 +1880,93 @@
                     this.progress = 10;
                     await new Promise(r => setTimeout(r, 50));
                     const content = `
-                        <div style="padding: 30px; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; background: white;">
+                        <div style="padding: 30px; font-family: 'Plus Jakarta Sans', sans-serif; color: #122d24; background: white;">
 
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1f7d5e; padding-bottom: 20px; margin-bottom: 30px;">
                                 <div>
-                                    <h1 style="margin: 0; color: #4f46e5; font-size: 24px; font-weight: 800;">AM SALES PRO</h1>
-                                    <p style="margin: 4px 0 0 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Master Ledger Transaction</p>
+                                    <h1 style="margin: 0; color: #1f7d5e; font-size: 24px; font-weight: 800;">AM SALES PRO</h1>
+                                    <p style="margin: 4px 0 0 0; font-size: 10px; font-weight: 700; color: #6e7b71; text-transform: uppercase; letter-spacing: 1px;">Master Ledger Transaction</p>
                                 </div>
                                 <div style="text-align: right;">
                                     <p style="margin: 0; font-size: 14px; font-weight: 800;">Invoice #${entry['Bill No'] || 'N/A'}</p>
-                                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b;">${entry.Date}</p>
+                                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #6e7b71;">${entry.Date}</p>
                                 </div>
                             </div>
 
                             <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
                                 <div style="width: 45%;">
                                     <p style="margin: 0 0 8px 0; font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Customer Details</p>
-                                    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">${entry.Customer}</p>
+                                    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #122d24;">${entry.Customer}</p>
                                     <p style="margin: 4px 0 0 0; font-size: 13px; color: #475569;">Mark: ${entry.Mark || '-'}</p>
                                 </div>
                                 <div style="width: 45%; text-align: right;">
                                     <p style="margin: 0 0 8px 0; font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Supplier / Owner</p>
-                                    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">${entry.Owner}</p>
+                                    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #122d24;">${entry.Owner}</p>
                                 </div>
                             </div>
 
                             <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
                                 <thead>
-                                    <tr style="background: #f8fafc;">
-                                        <th style="padding: 12px; text-align: left; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">ITEM DESCRIPTION</th>
-                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">PKGS</th>
-                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">NET WEIGHT</th>
-                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">RATE</th>
-                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0;">TOTAL</th>
+                                    <tr style="background: #f3f7f1;">
+                                        <th style="padding: 12px; text-align: left; font-size: 10px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #d4d7d2;">ITEM DESCRIPTION</th>
+                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #d4d7d2;">PKGS</th>
+                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #d4d7d2;">NET WEIGHT</th>
+                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #d4d7d2;">RATE</th>
+                                        <th style="padding: 12px; text-align: right; font-size: 10px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #d4d7d2;">TOTAL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td style="padding: 16px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid #f1f5f9;">${entry.Item}</td>
-                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #f1f5f9;">${entry.Pkgs}</td>
-                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #f1f5f9;">${this.formatNumber(entry['N.Kilo'])} kg</td>
-                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #f1f5f9;">${this.formatCurrency(entry.Rate)}</td>
-                                        <td style="padding: 16px 12px; font-size: 13px; font-weight: 700; text-align: right; border-bottom: 1px solid #f1f5f9; color: #4f46e5;">${this.formatCurrency(entry['C.Amount'])}</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8ede6;">${entry.Item}</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #e8ede6;">${entry.Pkgs}</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #e8ede6;">${this.formatNumber(entry['N.Kilo'])} kg</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; text-align: right; border-bottom: 1px solid #e8ede6;">${this.formatCurrency(entry.Rate)}</td>
+                                        <td style="padding: 16px 12px; font-size: 13px; font-weight: 700; text-align: right; border-bottom: 1px solid #e8ede6; color: #1f7d5e;">${this.formatCurrency(entry['C.Amount'])}</td>
                                     </tr>
                                 </tbody>
                             </table>
 
                             <div style="display: flex; justify-content: flex-end;">
-                                <div style="width: 280px; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                                <div style="width: 280px; background: #f3f7f1; padding: 20px; border-radius: 16px; border: 1px solid #d4d7d2;">
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Calculated Amount:</span>
+                                        <span style="font-size: 12px; color: #6e7b71; font-weight: 600;">Calculated Amount:</span>
                                         <span style="font-size: 12px; font-weight: 700;">${this.formatCurrency(entry['C.Amount'])}</span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Handling (Kooli):</span>
+                                        <span style="font-size: 12px; color: #6e7b71; font-weight: 600;">Handling (Kooli):</span>
                                         <span style="font-size: 12px; font-weight: 700;">${this.formatCurrency(entry.Kooli)}</span>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
-                                        <span style="font-size: 13px; font-weight: 800; color: #0f172a;">Actual Total:</span>
-                                        <span style="font-size: 13px; font-weight: 800; color: #4f46e5;">${this.formatCurrency(entry['A.Amount'])}</span>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-top: 12px; border-top: 1px dashed #bec7be;">
+                                        <span style="font-size: 13px; font-weight: 800; color: #122d24;">Actual Total:</span>
+                                        <span style="font-size: 13px; font-weight: 800; color: #1f7d5e;">${this.formatCurrency(entry['A.Amount'])}</span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Cash Received:</span>
+                                        <span style="font-size: 12px; color: #6e7b71; font-weight: 600;">Cash Received:</span>
                                         <span style="font-size: 12px; font-weight: 700; color: #059669;">- ${this.formatCurrency(entry.Cash)}</span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Cheque Received:</span>
+                                        <span style="font-size: 12px; color: #6e7b71; font-weight: 600;">Cheque Received:</span>
                                         <span style="font-size: 12px; font-weight: 700; color: #059669;">- ${this.formatCurrency(entry.Cheque)}</span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">Credit Received:</span>
+                                        <span style="font-size: 12px; color: #6e7b71; font-weight: 600;">Credit Received:</span>
                                         <span style="font-size: 12px; font-weight: 700;">- ${this.formatCurrency(entry['Credit Received'])}</span>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 2px solid #4f46e5;">
-                                        <span style="font-size: 15px; font-weight: 800; color: #0f172a;">Balance Due:</span>
+                                    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 2px solid #1f7d5e;">
+                                        <span style="font-size: 15px; font-weight: 800; color: #122d24;">Balance Due:</span>
                                         <span style="font-size: 15px; font-weight: 900; color: #ef4444;">${this.formatCurrency(entry.Balance)}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div style="margin-top: 80px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                            <div style="margin-top: 80px; border-top: 1px solid #f3f7f1; padding-top: 20px;">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                                     <div>
-                                        <p style="margin: 0; font-size: 12px; font-weight: 700; color: #64748b;">Remarks:</p>
-                                        <p style="margin: 4px 0 0 0; font-size: 12px; color: #0f172a;">${entry.Remark || 'No additional notes'}</p>
+                                        <p style="margin: 0; font-size: 12px; font-weight: 700; color: #6e7b71;">Remarks:</p>
+                                        <p style="margin: 4px 0 0 0; font-size: 12px; color: #122d24;">${entry.Remark || 'No additional notes'}</p>
                                     </div>
                                     <div style="text-align: right;">
-                                        <div style="height: 60px; width: 150px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px;"></div>
+                                        <div style="height: 60px; width: 150px; border-bottom: 1px solid #d4d7d2; margin-bottom: 8px;"></div>
                                         <p style="margin: 0; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Authorized Signature</p>
                                     </div>
                                 </div>
@@ -1770,7 +2034,7 @@
                         tCrR += Number(e['Credit Received']) || 0;
                         tKooli += Number(e.Kooli) || 0;
                         rows += `
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <tr style="border-bottom: 1px solid #d4d7d2;">
                             <td style="padding: 4px; font-size: 7px;">${e.Date}</td>
                             <td style="padding: 4px; font-size: 7px;">${e.N || ''}</td>
                             <td style="padding: 4px; font-size: 7px; font-weight: 700;">#${e['Bill No']}</td>
@@ -1784,7 +2048,7 @@
                             <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Tare)}</td>
                             <td style="padding: 4px; font-size: 7px; text-align: right; font-weight: 700;">${this.formatNumber(e['N.Kilo'])}</td>
                             <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Rate)}</td>
-                            <td style="padding: 4px; font-size: 7px; text-align: right; color: #4f46e5; font-weight: 700;">${this.formatNumber(e['C.Amount'])}</td>
+                            <td style="padding: 4px; font-size: 7px; text-align: right; color: #1f7d5e; font-weight: 700;">${this.formatNumber(e['C.Amount'])}</td>
                             <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e['A.Amount'])}</td>
                             <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Cash)}</td>
                             <td style="padding: 4px; font-size: 7px; text-align: right;">${this.formatNumber(e.Cheque)}</td>
@@ -1804,52 +2068,52 @@
                     this.progress = 60;
                     const content = `
                         <div style="padding: 40px; font-family: 'Plus Jakarta Sans', sans-serif;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #1f7d5e; padding-bottom: 20px; margin-bottom: 30px;">
                                 <div>
-                                    <h1 style="margin: 0; color: #4f46e5; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
-                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #1e293b;">${title}</h2>
+                                    <h1 style="margin: 0; color: #1f7d5e; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
+                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #122d24;">${title}</h2>
                                     ${rangeInfo}
                                 </div>
-                                <p style="margin: 0; font-size: 10px; color: #64748b; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
+                                <p style="margin: 0; font-size: 10px; color: #6e7b71; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
                             </div>
                             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                                 <thead>
-                                    <tr style="background: #f8fafc; text-align: left;">
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">DATE</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">N</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">BILL</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">OWNER</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">MARK</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">ITEM</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">CUSTOMER</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: center;">PKGS</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">P.KG</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">G.KG</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">TARE</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">N.KG</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">RATE</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">C.AMT</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">A.AMT</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CASH</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CHQ</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CR.G</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CR.R</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">BAL</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">KOOLI</th>
-                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">REMARK</th>
+                                    <tr style="background: #f3f7f1; text-align: left;">
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">DATE</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">N</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">BILL</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">OWNER</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">MARK</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">ITEM</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">CUSTOMER</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: center;">PKGS</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">P.KG</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">G.KG</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">TARE</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">N.KG</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">RATE</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">C.AMT</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">A.AMT</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">CASH</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">CHQ</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">CR.G</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">CR.R</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">BAL</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">KOOLI</th>
+                                        <th style="padding: 4px; font-size: 6px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">REMARK</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${rows}
                                 </tbody>
                                 <tfoot>
-                                    <tr style="background: #f1f5f9; font-weight: 800;">
+                                    <tr style="background: #f3f7f1; font-weight: 800;">
                                         <td colspan="7" style="padding: 6px; font-size: 7px; text-align: right;">TOTALS:</td>
                                         <td style="padding: 6px; font-size: 7px; text-align: center;">${this.formatNumber(tPkgs)}</td>
                                         <td colspan="3"></td>
                                         <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tWgt)}</td>
                                         <td></td>
-                                        <td style="padding: 6px; font-size: 7px; text-align: right; color: #4f46e5;">${this.formatNumber(tRev)}</td>
+                                        <td style="padding: 6px; font-size: 7px; text-align: right; color: #1f7d5e;">${this.formatNumber(tRev)}</td>
                                         <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tAAmt)}</td>
                                         <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tCash)}</td>
                                         <td style="padding: 6px; font-size: 7px; text-align: right;">${this.formatNumber(tChq)}</td>
@@ -1861,8 +2125,8 @@
                                     </tr>
                                 </tfoot>
                             </table>
-                            <p style="font-size: 9px; color: #64748b; font-style: italic;">Total Transactions in Report: ${reportEntries.length}</p>
-                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                            <p style="font-size: 9px; color: #6e7b71; font-style: italic;">Total Transactions in Report: ${reportEntries.length}</p>
+                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f3f7f1; padding-top: 20px;">
                                 <p style="font-size: 9px; color: #94a3b8; letter-spacing: 1px;">AM SALES MASTER LEDGER SYSTEM - INTERNAL USE ONLY</p>
                             </div>
                         </div>
@@ -1923,7 +2187,7 @@
                         }
 
                         rows += `
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <tr style="border-bottom: 1px solid #d4d7d2;">
                             <td style="padding: 4px; font-size: 7.5px;">${e.Date}</td>
                             <td style="padding: 4px; font-size: 7.5px; font-weight: 700;">#${e['Bill No']}</td>
                             <td style="padding: 4px; font-size: 7.5px;">${e.Owner}</td>
@@ -1934,7 +2198,7 @@
                             <td style="padding: 4px; font-size: 7.5px; text-align: right;">${this.formatNumber(e.Tare)}</td>
                             <td style="padding: 4px; font-size: 7.5px; text-align: right; font-weight: 700;">${this.formatNumber(e['N.Kilo'])}</td>
                             <td style="padding: 4px; font-size: 7.5px; text-align: right;">${this.formatNumber(e.Rate)}</td>
-                            <td style="padding: 4px; font-size: 7.5px; text-align: right; color: #4f46e5; font-weight: 700;">${this.formatNumber(e['C.Amount'])}</td>
+                            <td style="padding: 4px; font-size: 7.5px; text-align: right; color: #1f7d5e; font-weight: 700;">${this.formatNumber(e['C.Amount'])}</td>
                             <td style="padding: 4px; font-size: 7.5px; text-align: right;">${this.formatNumber(e.Cheque)}</td>
                             <td style="padding: 4px; font-size: 7.5px; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${e.Remark || ''}</td>
                         </tr>`;
@@ -1943,51 +2207,51 @@
                     this.progress = 60;
                     const content = `
                         <div style="padding: 40px; font-family: 'Plus Jakarta Sans', sans-serif;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #1f7d5e; padding-bottom: 20px; margin-bottom: 30px;">
                                 <div>
-                                    <h1 style="margin: 0; color: #4f46e5; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
-                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #1e293b;">${title}</h2>
+                                    <h1 style="margin: 0; color: #1f7d5e; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
+                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #122d24;">${title}</h2>
                                     ${rangeInfo}
                                 </div>
-                                <p style="margin: 0; font-size: 10px; color: #64748b; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
+                                <p style="margin: 0; font-size: 10px; color: #6e7b71; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
                             </div>
                             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                                 <thead>
-                                    <tr style="background: #f8fafc; text-align: left;">
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">DATE</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">BILL</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">OWNER</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">MARK</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">ITEM</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: center;">PKGS</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">G.KG</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">TARE</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">N.KG</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">RATE</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">C.AMT</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1; text-align: right;">CHQ</th>
-                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #64748b; border-bottom: 2px solid #cbd5e1;">REMARK</th>
+                                    <tr style="background: #f3f7f1; text-align: left;">
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">DATE</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">BILL</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">OWNER</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">MARK</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">ITEM</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: center;">PKGS</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">G.KG</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">TARE</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">N.KG</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">RATE</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">C.AMT</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be; text-align: right;">CHQ</th>
+                                        <th style="padding: 4px; font-size: 7px; font-weight: 800; color: #6e7b71; border-bottom: 2px solid #bec7be;">REMARK</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${rows}
                                 </tbody>
                                 <tfoot>
-                                    <tr style="background: #f1f5f9; font-weight: 800;">
+                                    <tr style="background: #f3f7f1; font-weight: 800;">
                                         <td colspan="5" style="padding: 6px; font-size: 8px; text-align: right;">TOTALS:</td>
                                         <td style="padding: 6px; font-size: 8px; text-align: center;">${this.formatNumber(tPkgs)}</td>
                                         <td style="padding: 6px; font-size: 8px; text-align: right;">${this.formatNumber(tGKilo)}</td>
                                         <td></td>
                                         <td style="padding: 6px; font-size: 8px; text-align: right;">${this.formatNumber(tWgt)}</td>
                                         <td></td>
-                                        <td style="padding: 6px; font-size: 8px; text-align: right; color: #4f46e5;">${this.formatNumber(tRev)}</td>
+                                        <td style="padding: 6px; font-size: 8px; text-align: right; color: #1f7d5e;">${this.formatNumber(tRev)}</td>
                                         <td style="padding: 6px; font-size: 8px; text-align: right;">${this.formatNumber(tChq)}</td>
                                         <td></td>
                                     </tr>
                                 </tfoot>
                             </table>
-                            <p style="font-size: 9px; color: #64748b; font-style: italic;">Total Transactions in Report: ${reportEntries.length}</p>
-                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                            <p style="font-size: 9px; color: #6e7b71; font-style: italic;">Total Transactions in Report: ${reportEntries.length}</p>
+                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f3f7f1; padding-top: 20px;">
                                 <p style="font-size: 9px; color: #94a3b8; letter-spacing: 1px;">AM SALES MASTER LEDGER SYSTEM - INTERNAL USE ONLY</p>
                             </div>
                         </div>
@@ -2027,10 +2291,10 @@
                         }
 
                         rows += `
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <tr style="border-bottom: 1px solid #d4d7d2;">
                             <td style="padding: 10px; font-size: 10px; font-weight: 700;">${item[typeKey] || item.owner || item.customer || item.item}</td>
                             <td style="padding: 10px; font-size: 10px; text-align: center;">${item.count}</td>
-                            <td style="padding: 10px; font-size: 10px; text-align: right; color: #4f46e5;">${this.formatNumber(item.revenue)}</td>
+                            <td style="padding: 10px; font-size: 10px; text-align: right; color: #1f7d5e;">${this.formatNumber(item.revenue)}</td>
                             <td style="padding: 10px; font-size: 10px; text-align: right;">${this.formatNumber(item.aAmount)}</td>
                             <td style="padding: 10px; font-size: 10px; text-align: right; color: #059669;">${this.formatNumber(item.cash)}</td>
                             <td style="padding: 10px; font-size: 10px; text-align: right; color: #059669;">${this.formatNumber(item.cheque)}</td>
@@ -2044,33 +2308,33 @@
                     this.progress = 60;
                     const content = `
                         <div style="padding: 40px; font-family: 'Plus Jakarta Sans', sans-serif;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #1f7d5e; padding-bottom: 20px; margin-bottom: 30px;">
                                 <div>
-                                    <h1 style="margin: 0; color: #4f46e5; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
-                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #1e293b;">${title}</h2>
+                                    <h1 style="margin: 0; color: #1f7d5e; font-size: 20px; font-weight: 800;">AM SALES PRO</h1>
+                                    <h2 style="margin: 4px 0 0 0; font-size: 14px; color: #122d24;">${title}</h2>
                                     ${rangeInfo}
                                 </div>
-                                <p style="margin: 0; font-size: 10px; color: #64748b; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
+                                <p style="margin: 0; font-size: 10px; color: #6e7b71; font-weight: 600;">Generated: ${new Date().toLocaleString()}</p>
                             </div>
                             <table style="width: 100%; border-collapse: collapse;">
                                 <thead>
-                                    <tr style="background: #f8fafc; text-align: left;">
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-transform: uppercase;">${typeKey.toUpperCase()}</th>
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: center; text-transform: uppercase;">TXNS</th>
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">REVENUE</th>
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">ACTUAL</th>
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">CASH</th>
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">CHQ</th>
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">KOOLI</th>
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">WEIGHT</th>
-                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #64748b; border-bottom: 1px solid #cbd5e1; text-align: right; text-transform: uppercase;">OUTSTANDING</th>
+                                    <tr style="background: #f3f7f1; text-align: left;">
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-transform: uppercase;">${typeKey.toUpperCase()}</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-align: center; text-transform: uppercase;">TXNS</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-align: right; text-transform: uppercase;">REVENUE</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-align: right; text-transform: uppercase;">ACTUAL</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-align: right; text-transform: uppercase;">CASH</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-align: right; text-transform: uppercase;">CHQ</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-align: right; text-transform: uppercase;">KOOLI</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-align: right; text-transform: uppercase;">WEIGHT</th>
+                                        <th style="padding: 10px; font-size: 9px; font-weight: 800; color: #6e7b71; border-bottom: 1px solid #bec7be; text-align: right; text-transform: uppercase;">OUTSTANDING</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${rows}
                                 </tbody>
                             </table>
-                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f3f7f1; padding-top: 20px;">
                                 <p style="font-size: 9px; color: #94a3b8; letter-spacing: 1px;">AM SALES MASTER LEDGER SYSTEM - INTERNAL USE ONLY</p>
                             </div>
                         </div>
@@ -2471,7 +2735,7 @@
                 <div class="h-full flex flex-col bg-white shadow-2xl">
                     <div class="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                         <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                             Activity Log
                         </h2>
                         <button @click="showNotifications = false" class="text-slate-400 hover:text-slate-600 transition-colors">
@@ -2480,10 +2744,10 @@
                     </div>
                     <div class="flex-1 overflow-y-auto p-4 space-y-3">
                         <template x-for="(note, index) in notifications" :key="note.id">
-                            <div class="p-4 rounded-xl border border-slate-100 flex gap-3 transition-all hover:bg-slate-50" :class="note.type === 'success' ? 'bg-emerald-50/30' : note.type === 'warning' ? 'bg-amber-50/30' : 'bg-blue-50/30'">
+                            <div class="p-4 rounded-xl border border-slate-100 flex gap-3 transition-all hover:bg-slate-50" :class="note.type === 'success' ? 'bg-emerald-50/30' : note.type === 'warning' ? 'bg-amber-50/30' : 'bg-emerald-50/30'">
                                 <div class="flex-shrink-0">
                                     <template x-if="note.type === 'success'"><svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></template>
-                                    <template x-if="note.type === 'info'"><svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg></template>
+                                    <template x-if="note.type === 'info'"><svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg></template>
                                     <template x-if="note.type === 'warning'"><svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></template>
                                 </div>
                                 <div class="flex-1">
