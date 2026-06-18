@@ -14,9 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <style>
@@ -529,6 +526,34 @@
                 </div>
             </div>
             <div class="flex items-center gap-4">
+                <!-- GitHub Sync Status Indicator -->
+                <div class="flex items-center gap-2">
+                    <template x-if="syncStatus === 'syncing'">
+                        <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-xs font-medium text-blue-600 animate-pulse">
+                            <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Syncing...
+                        </div>
+                    </template>
+                    <template x-if="syncStatus === 'success'">
+                        <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-medium text-emerald-600" :title="lastSyncTime">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+                            Synced
+                        </div>
+                    </template>
+                    <template x-if="syncStatus === 'offline'">
+                        <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-medium text-amber-600">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.251a.375.375 0 0 1-.469.369l-12.868-4.415a.375.375 0 0 1 0-.706l12.868-4.415a.375.375 0 0 1 .469.369l.048 1.098a12.515 12.515 0 1 1 .769 7.21l-1.075.29-.047 1.11Z"></path></svg>
+                            Offline
+                        </div>
+                    </template>
+                    <template x-if="syncStatus === 'error'">
+                        <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-50 border border-red-200 rounded-lg text-xs font-medium text-red-600">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2v2m0-4h-2V7h2v6z"></path></svg>
+                            Error
+                        </div>
+                    </template>
+                </div>
+                
                 <button @click="showNotifications = !showNotifications" class="relative p-2 text-slate-500 hover:text-emerald-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -1369,22 +1394,176 @@
                 editingId: null,
                 editingData: {},
                 charts: { revenue: null, items: null },
-                    firebaseDB: null,
+                    // GitHub Cloud Sync Config
+                    githubToken: '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',
+                    githubOwner: 'narean19-star',
+                    githubRepo: 'amfin',
+                    githubDataFile: 'data.json',
+                    githubSHA: null,
+                    syncStatus: 'idle', // idle, syncing, success, error, offline
+                    lastSyncTime: null,
+                    lastRemoteUpdate: null,
+                    syncQueue: [],
+                    isOnline: navigator.onLine,
+                    syncDebounceTimer: null,
+                    activityLog: [],
 
-                async init() {
-                    this.isLoading = true;
+                    async getGitHubFile() {
+                        try {
+                            const url = `https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/contents/${this.githubDataFile}`;
+                            const response = await fetch(url, {
+                                headers: { 'Authorization': `token ${this.githubToken}`, 'Accept': 'application/vnd.github.v3.raw' }
+                            });
+                            if (response.status === 404) return { data: null, sha: null };
+                            if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
+                            
+                            const headResponse = await fetch(url, {
+                                headers: { 'Authorization': `token ${this.githubToken}` }
+                            });
+                            const metadata = await headResponse.json();
+                            const content = await response.text();
+                            return { data: JSON.parse(content), sha: metadata.sha };
+                        } catch (error) {
+                            console.error('GitHub read error:', error);
+                            return { data: null, sha: null };
+                        }
+                    },
 
-                    // Initialize Firebase
-                    const firebaseConfig = {
-                        apiKey: "YOUR_API_KEY",
-                        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-                        projectId: "YOUR_PROJECT_ID",
-                        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-                        messagingSenderId: "YOUR_SENDER_ID",
-                        appId: "YOUR_APP_ID"
-                    };
-                    firebase.initializeApp(firebaseConfig);
-                    this.firebaseDB = firebase.firestore();
+                    async pushToGitHub(data) {
+                        if (!this.isOnline) {
+                            this.syncQueue.push({ data, timestamp: Date.now() });
+                            return false;
+                        }
+
+                        try {
+                            this.syncStatus = 'syncing';
+                            const url = `https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/contents/${this.githubDataFile}`;
+                            const dataStr = JSON.stringify(data, null, 2);
+                            const encoded = btoa(unescape(encodeURIComponent(dataStr)));
+                            const timestamp = new Date().toISOString();
+                            const message = `Update ledger data - ${timestamp}`;
+
+                            const payload = {
+                                message,
+                                content: encoded,
+                                branch: 'main'
+                            };
+
+                            if (this.githubSHA) payload.sha = this.githubSHA;
+
+                            const response = await fetch(url, {
+                                method: 'PUT',
+                                headers: {
+                                    'Authorization': `token ${this.githubToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(payload)
+                            });
+
+                            if (!response.ok) throw new Error(`Push failed: ${response.status}`);
+                            const result = await response.json();
+                            this.githubSHA = result.content.sha;
+                            this.lastSyncTime = timestamp;
+                            this.syncStatus = 'success';
+                            
+                            // Save to localStorage too
+                            localStorage.setItem('am_sales_master_v1', dataStr);
+                            localStorage.setItem('am_sales_github_sha', this.githubSHA);
+                            localStorage.setItem('am_sales_last_sync', this.lastSyncTime);
+                            
+                            return true;
+                        } catch (error) {
+                            console.error('GitHub push error:', error);
+                            this.syncStatus = 'error';
+                            this.syncQueue.push({ data, timestamp: Date.now() });
+                            return false;
+                        }
+                    },
+
+                    async syncWithGitHub() {
+                        if (!this.isOnline || this.syncQueue.length === 0) return;
+                        
+                        try {
+                            for (let item of this.syncQueue) {
+                                await this.pushToGitHub(item.data);
+                            }
+                            this.syncQueue = [];
+                            this.addNotification('Sync Complete', 'All pending changes synced to GitHub.', 'success');
+                        } catch (error) {
+                            this.addNotification('Sync Error', error.message, 'error');
+                        }
+                    },
+
+                    async init() {
+                        this.isLoading = true;
+                        window.addEventListener('online', () => {
+                            this.isOnline = true;
+                            this.syncStatus = 'syncing';
+                            this.syncWithGitHub();
+                        });
+                        window.addEventListener('offline', () => {
+                            this.isOnline = false;
+                            this.syncStatus = 'offline';
+                        });
+
+                        try {
+                            let loadedData = null;
+                            let loadSource = 'none';
+
+                            // 1. Try GitHub first
+                            if (this.isOnline) {
+                                const github = await this.getGitHubFile();
+                                if (github.data && github.data.entries) {
+                                    loadedData = github.data;
+                                    this.githubSHA = github.sha;
+                                    loadSource = 'github';
+                                    this.syncStatus = 'success';
+                                }
+                            }
+
+                            // 2. Fallback to localStorage
+                            if (!loadedData) {
+                                const saved = localStorage.getItem('am_sales_master_v1');
+                                const savedSHA = localStorage.getItem('am_sales_github_sha');
+                                if (saved) {
+                                    loadedData = JSON.parse(saved);
+                                    this.githubSHA = savedSHA;
+                                    loadSource = 'localStorage';
+                                    if (this.isOnline) {
+                                        this.addNotification('Offline Cache', 'Loaded from local cache. Will sync to GitHub.', 'info');
+                                    }
+                                } else {
+                                    loadedData = { entries: [], owners: [], customers: [], items: [], expenses: [], expenseCategories: [], notifications: [] };
+                                    loadSource = 'new';
+                                }
+                            }
+
+                            // Populate state
+                            this.entries = loadedData.entries || [];
+                            this.owners = loadedData.owners || [];
+                            this.customers = loadedData.customers || [];
+                            this.items = loadedData.items || [];
+                            this.expenseCategories = loadedData.expenseCategories || [];
+                            this.expenses = loadedData.expenses || [];
+                            this.notifications = loadedData.notifications || [];
+
+                            this.addNotification('Data Loaded', `Ledger loaded from ${loadSource}.`, 'info');
+
+                        } catch (error) {
+                            console.error('Init error:', error);
+                            const saved = localStorage.getItem('am_sales_master_v1');
+                            if (saved) {
+                                const parsed = JSON.parse(saved);
+                                this.entries = parsed.entries || [];
+                                this.owners = parsed.owners || [];
+                                this.customers = parsed.customers || [];
+                                this.items = parsed.items || [];
+                                this.expenseCategories = parsed.expenseCategories || [];
+                                this.expenses = parsed.expenses || [];
+                                this.notifications = parsed.notifications || [];
+                                this.addNotification('Error', 'Loaded from local storage due to error.', 'error');
+                            }
+                        }
 
                     try {
                         let loadedData = null;
@@ -1457,6 +1636,13 @@
                         }
                     }
 
+                    // Set up periodic sync check every 30 seconds
+                    setInterval(() => {
+                        if (this.isOnline && this.syncQueue.length > 0) {
+                            this.syncWithGitHub();
+                        }
+                    }, 30000);
+
                     // 4. Sanitize and normalize loaded data (from either source)
                     const numKeys = ['Pkgs','P.Kilo','G.Kilo','Tare','N.Kilo','Rate','Kooli','C.Amount','A.Amount','Cash', 'Cheque', 'Credit Given','Credit Received','Balance'];
                     this.entries = this.entries.map(e => {
@@ -1491,20 +1677,22 @@
                     const data = {
                         entries: this.entries,
                         owners: this.owners,
-                            customers: this.customers, // Keep customers
-                            lastUpdated: new Date().toISOString(), // Keep lastUpdated
-                            items: this.items,
-                            expenses: this.expenses,
-                            expenseCategories: this.expenseCategories,
-                            notifications: this.notifications
+                        customers: this.customers,
+                        lastUpdated: new Date().toISOString(),
+                        items: this.items,
+                        expenses: this.expenses,
+                        expenseCategories: this.expenseCategories,
+                        notifications: this.notifications
                     };
+
+                    // Save to localStorage immediately
                     localStorage.setItem('am_sales_master_v1', JSON.stringify(data));
 
-                    // Sync to Firebase Firestore
-                    if (this.firebaseDB) {
-                        this.firebaseDB.collection('data').doc('master_ledger').set(data)
-                            .catch(err => console.warn('Firebase sync failed:', err));
-                    }
+                    // Debounced GitHub sync (max once every 500ms)
+                    clearTimeout(this.syncDebounceTimer);
+                    this.syncDebounceTimer = setTimeout(() => {
+                        this.pushToGitHub(data);
+                    }, 500);
                 },
 
                 addNotification(title, message, type = 'info') {
