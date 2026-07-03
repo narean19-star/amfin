@@ -10,7 +10,8 @@
     <meta name="theme-color" content="#0f172a">
     <script>
         // Set this value when the backend is hosted separately from the frontend.
-        // Example: window.CLOUD_API_BASE = 'https://your-backend-service.onrender.com/api';
+        // For GitHub Pages static hosting, set this to your backend API URL:
+        // window.CLOUD_API_BASE = 'https://your-backend-service.onrender.com/api';
         window.CLOUD_API_BASE = window.CLOUD_API_BASE || '';
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1820,6 +1821,10 @@
                 Cloud status: <span :class="cloudAvailable ? 'text-emerald-500' : 'text-rose-500'" x-text="cloudStatus"></span>
             </div>
             <div class="mt-2 text-xs text-slate-500">
+                Storage source: <span class="font-mono" x-text="cloudStorage"></span>
+                <span x-show="cloudStorageDetails" class="text-slate-400"> - <span x-text="cloudStorageDetails"></span></span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">
                 Backend API: <span class="font-mono" x-text="apiBase"></span>
             </div>
         </div>
@@ -1895,6 +1900,8 @@ function accountingApp() {
         cloudSyncing: false,
         cloudAvailable: false,
         cloudStatus: 'Local only',
+        cloudStorage: 'local',
+        cloudStorageDetails: '',
         _lastSaved: null,
 
         get viewTitle() {
@@ -2030,8 +2037,15 @@ function accountingApp() {
             try {
                 const response = await fetch(this.apiBase + '/data');
                 if (!response.ok) throw new Error('Cloud data load failed');
-                return await response.json();
+                const result = await response.json();
+                this.cloudStorage = result.storage || 'unknown';
+                this.cloudStorageDetails = result.details || '';
+                this.cloudAvailable = result.cloudAvailable === true;
+                return result;
             } catch (err) {
+                this.cloudAvailable = false;
+                this.cloudStorage = 'local';
+                this.cloudStorageDetails = '';
                 return null;
             }
         },
@@ -2051,7 +2065,20 @@ function accountingApp() {
                     body: JSON.stringify(payload)
                 });
                 if (!response.ok) throw new Error('Cloud save failed');
-                this.cloudStatus = 'Cloud in sync';
+                if (response.ok) {
+                    const result = await response.json();
+                    this.cloudStorageDetails = result.details || '';
+                    if (result.fallback) {
+                        this.cloudStatus = 'Saved locally due to GitHub error';
+                        this.cloudStorage = 'local';
+                        this.toast('Cloud sync', 'Data saved locally because GitHub write failed.', 'warning');
+                    } else {
+                        this.cloudStatus = 'Cloud in sync';
+                        this.cloudStorage = result.storage || 'github';
+                    }
+                } else {
+                    throw new Error('Cloud save failed');
+                }
             } catch (err) {
                 this.cloudStatus = 'Cloud save failed';
                 this.toast('Cloud error', 'Could not save data to cloud.', 'error');
