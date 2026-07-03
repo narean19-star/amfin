@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: amfin
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install --prefix server
+    startCommand: npm start --prefix server
+    envVars:
+      - key: GITHUB_OWNER
+        value: narean19-star
+      - key: GITHUB_REPO
+        value: amfin
+      - key: GITHUB_BRANCH
+        value: main
+      - key: GITHUB_DATA_PATH
+        value: data.json

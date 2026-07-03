@@ -1,0 +1,13 @@
+node_modules/
+.venv/
+.env
+.env.*
+!.env.example
+.DS_Store
+npm-debug.log*
+
+# ignore duplicate files created by editors, downloads, or GitHub
+404(1).html
+manifest(1).json
+README(1).md
+.nojekyll(1)

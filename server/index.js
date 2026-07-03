@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const { Octokit } = require('@octokit/rest');
 const dotenv = require('dotenv');
@@ -19,8 +20,15 @@ if (!GITHUB_TOKEN) {
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 const app = express();
+const rootDir = path.resolve(__dirname, '..');
+
 app.use(cors());
 app.use(bodyParser.json({ limit: '5mb' }));
+app.use(express.static(rootDir));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(rootDir, 'index.html'));
+});
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
@@ -71,6 +79,13 @@ app.post('/api/data', async (req, res) => {
     console.error('POST /api/data error', err);
     return res.status(500).json({ error: 'Failed to write data to GitHub' });
   }
+});
+
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  return res.sendFile(path.join(rootDir, 'index.html'));
 });
 
 app.listen(PORT, () => {
