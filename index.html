@@ -283,11 +283,11 @@
         </button>
     </nav>
     <div class="p-3 border-t border-slate-800 space-y-1.5">
-        <button @click="$refs.xlsxImport.click()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Import Excel</button>
-        <button @click="exportExcel()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export Excel</button>
-        <button @click="backupJSON()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Backup JSON</button>
-        <input type="file" x-ref="xlsxImport" class="hidden" @change="importExcel($event)" accept=".xlsx,.xls">
-        <input type="file" x-ref="jsonRestore" class="hidden" @change="restoreJSON($event)" accept=".json">
+        <button @click.prevent="$refs.xlsxImport.click()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Import Excel</button>
+        <button @click.prevent="exportExcel()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export Excel</button>
+        <button @click.prevent="backupJSON()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Backup JSON</button>
+        <input type="file" x-ref="xlsxImport" style="position:absolute;left:-9999px;top:-9999px;" @change="importExcel($event)" accept=".xlsx,.xls">
+        <input type="file" x-ref="jsonRestore" style="position:absolute;left:-9999px;top:-9999px;" @change="restoreJSON($event)" accept=".json">
     </div>
 </aside>
 
@@ -379,6 +379,24 @@
                 <p class="text-[10px] font-black text-red-400 uppercase tracking-wider">Outstanding</p>
                 <p class="text-xl font-black text-rose-600 mt-1 num" x-text="fc(totals.outstanding)"></p>
                 <p class="text-xs text-slate-400 mt-0.5" x-text="summariesByOutstanding.length + ' debtors'"></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="kpi kpi-slate anim-kpi">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Estimated Stock</p>
+                <p class="text-xl font-black text-slate-900 mt-1 num" x-text="fn(totals.stockKg) + ' KG'"></p>
+                <p class="text-xs text-slate-400 mt-0.5" x-text="fc(totals.stockValue) + ' value'"></p>
+            </div>
+            <div class="kpi kpi-amber anim-kpi">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Payables</p>
+                <p class="text-xl font-black text-slate-900 mt-1 num" x-text="fc(totals.purchaseOwed)"></p>
+                <p class="text-xs text-slate-400 mt-0.5" x-text="totals.purchasePaid ? 'Paid ' + fc(totals.purchasePaid) : 'No payments yet'"></p>
+            </div>
+            <div class="kpi kpi-blue anim-kpi">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Net Cashflow</p>
+                <p class="text-xl font-black mt-1 num" :class="totals.netCashflow>=0 ? 'text-emerald-600' : 'text-rose-600'" x-text="fc(totals.netCashflow)"></p>
+                <p class="text-xs text-slate-400 mt-0.5" x-text="totals.cashIn ? 'Cash in: ' + fc(totals.cashIn) : 'No cash receipts'"></p>
             </div>
         </div>
 
@@ -1988,6 +2006,10 @@ function accountingApp() {
             this.cloudStatus = this.cloudAvailable ? 'Ready to sync' : 'Local only';
         },
 
+        hasAnyData(data) {
+            return (data.entries?.length || 0) + (data.purchases?.length || 0) + (data.expenses?.length || 0) + (data.cheques?.length || 0) + (data.owners?.length || 0) + (data.customers?.length || 0) + (data.items?.length || 0) + (data.suppliers?.length || 0) + (data.expenseCategories?.length || 0) > 0;
+        },
+
         buildAppData() {
             return {
                 entries: this.entries,
@@ -2015,17 +2037,19 @@ function accountingApp() {
                 this.cloudAvailable = true;
                 const cloudTimestamp = cloud.data.lastSaved ? new Date(cloud.data.lastSaved).getTime() : 0;
                 const localTimestamp = this._lastSaved ? new Date(this._lastSaved).getTime() : 0;
-                if (cloudTimestamp > localTimestamp) {
+                const localHasData = this.hasAnyData(this.buildAppData());
+                const cloudHasData = this.hasAnyData(cloud.data);
+                if (cloudTimestamp > localTimestamp || (!localHasData && cloudHasData)) {
                     this.applyCloudData(cloud.data);
                     this.saveLocalData();
-                    this.cloudStatus = 'Loaded newer cloud data';
-                    this.toast('Cloud sync', 'Loaded newer data from the cloud.', 'success');
+                    this.cloudStatus = 'Loaded cloud data';
+                    this.toast('Cloud sync', 'Loaded data from the cloud.', 'success');
                 } else if (localTimestamp > cloudTimestamp) {
                     await this.pushCloudData();
                     this.cloudStatus = 'Saved local data to cloud';
                     this.toast('Cloud sync', 'Local changes uploaded to cloud.', 'success');
                 } else {
-                    this.cloudStatus = 'Cloud in sync';
+                    this.cloudStatus = cloudHasData ? 'Cloud in sync' : 'Local only';
                 }
             } catch (err) {
                 this.cloudAvailable = false;
@@ -2146,11 +2170,18 @@ function accountingApp() {
             const chequeIn = filtered.reduce((a, e) => a + (+e.Cheque || 0), 0);
             const outstanding = filtered.reduce((a, e) => a + (+e.Balance || 0), 0);
             const purchasesAmt = this.purchases.reduce((a, p) => a + (+p.amount || 0), 0);
+            const purchasePaid = this.purchases.reduce((a, p) => a + (+p.paidCash || 0) + (+p.paidCheque || 0), 0);
             const purchaseOwed = this.purchases.reduce((a, p) => a + (+p.balance || 0), 0);
             const expensesAmt = this.expenses.reduce((a, e) => a + (+e.amount || 0), 0);
             const grossProfit = sales - purchasesAmt;
             const netProfit = grossProfit - expensesAmt;
-            return { sales, aAmount, cashIn, chequeIn, outstanding, purchases: purchasesAmt, purchaseOwed, expenses: expensesAmt, grossProfit, netProfit };
+            const stockKg = Math.max(0, this.purchases.reduce((a, p) => a + (+p.qty || 0), 0) - this.entries.reduce((a, e) => a + (+e['N.Kilo'] || 0), 0));
+            const totalPurchaseQty = this.purchases.reduce((a, p) => a + (+p.qty || 0), 0);
+            const avgPurchaseRate = totalPurchaseQty > 0 ? this.purchases.reduce((a, p) => a + ((+p.rate || 0) * (+p.qty || 0)), 0) / totalPurchaseQty : 0;
+            const stockValue = stockKg * avgPurchaseRate;
+            const cashOut = purchasePaid + expensesAmt;
+            const netCashflow = cashIn - cashOut;
+            return { sales, aAmount, cashIn, chequeIn, outstanding, purchases: purchasesAmt, purchasePaid, purchaseOwed, expenses: expensesAmt, grossProfit, netProfit, stockKg, avgPurchaseRate, stockValue, cashOut, netCashflow };
         },
 
         get dateFilteredEntries() {
@@ -2970,25 +3001,44 @@ function accountingApp() {
             reader.onload = (ev) => {
                 try {
                     const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array', cellDates: true });
-                    const sheet = wb.Sheets[wb.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-                    if (!rows.length) throw new Error('Empty file');
-                    let headers = rows[0].map(h => String(h || '').trim().replace(/\s+/g, ' '));
-                    let dataRows = rows.slice(1);
+                    const normalizeHeader = h => String(h || '').trim().replace(/\s+/g, ' ');
                     const nk = k => String(k).trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const findSheet = () => {
+                        for (const name of wb.SheetNames) {
+                            const sheet = wb.Sheets[name];
+                            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                            if (!rows.length) continue;
+                            const headers = rows[0].map(normalizeHeader);
+                            const keys = headers.map(h => h.toLowerCase());
+                            if (keys.includes('owner') || keys.includes('supplier') || keys.includes('customer') || keys.includes('buyer')) {
+                                return { sheet, rows, headers };
+                            }
+                        }
+                        // Fallback to first sheet if none matched
+                        const sheet = wb.Sheets[wb.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                        return { sheet, rows, headers: rows[0]?.map(normalizeHeader) || [] };
+                    };
+
+                    const { rows, headers } = findSheet();
+                    if (!rows.length) throw new Error('Empty file');
+                    const dataRows = rows.slice(1);
                     const buildRow = row => headers.reduce((obj, k, i) => { if (k) obj[nk(k)] = row[i]; return obj; }, {});
-                    const json = dataRows.map(buildRow).filter(r => r.owner || r.Owner);
+                    const json = dataRows.map(buildRow).filter(r => r.owner || r.Owner || r.supplier || r.customer || r.buyer || r.bill || r.billno || r.item);
+                    if (!json.length) throw new Error('No importable rows found');
                     const existingKeys = new Set(this.entries.map(e => `${e.Date}|${e['Bill No']}|${e.Owner}|${e.Customer}`));
                     let imported = 0;
                     json.forEach((r, i) => {
-                        let rawDate = r.date || r.datefield || '';
+                        let rawDate = r.date || r.datefield || r.datecolumn || '';
                         let dateValue;
                         if (rawDate instanceof Date) dateValue = rawDate.toISOString().split('T')[0];
                         else if (!isNaN(rawDate) && typeof rawDate === 'number') { const d = new Date((rawDate - 25569) * 86400000); dateValue = d.toISOString().split('T')[0]; }
                         else dateValue = String(rawDate || new Date().toISOString().split('T')[0]);
+                        const owner = String(r.owner || r.supplier || '');
+                        const customer = String(r.customer || r.buyer || '');
                         const entry = this.normalizeSaleEntry({
-                            id: Date.now() + i, Date: dateValue, 'Bill No': String(r.billno || r.bill || ''), Owner: String(r.owner || r.supplier || ''),
-                            Customer: String(r.customer || r.buyer || ''), Item: String(r.item || r.description || ''), Mark: String(r.mark || ''), N: String(r.n || ''),
+                            id: Date.now() + i, Date: dateValue, 'Bill No': String(r.billno || r.bill || ''), Owner: owner,
+                            Customer: customer, Item: String(r.item || r.description || ''), Mark: String(r.mark || ''), N: String(r.n || ''),
                             Pkgs: Number(r.pkgs || 0), 'P.Kilo': Number(r.pkilo || r.pk || 0), 'G.Kilo': Number(r.gkilo || r.gk || 0), Tare: Number(r.tare || 0),
                             'N.Kilo': Number(r.nkilo || r.nk || 0), Rate: Number(r.rate || r.price || 0), Kooli: Number(r.kooli || 0),
                             'C.Amount': Number(r.camount || r.calculatedamount || r.total || 0), 'A.Amount': Number(r.aamount || r.actualamount || 0),
@@ -2997,7 +3047,7 @@ function accountingApp() {
                             Balance: Number(r.balance || r.bal || 0), Remark: String(r.remark || r.remarks || ''), Source: 'Import'
                         });
                         const key = `${entry.Date}|${entry['Bill No']}|${entry.Owner}|${entry.Customer}`;
-                        if (!entry.Owner || !entry.Customer || existingKeys.has(key)) return;
+                        if ((!entry.Owner && !entry.Customer) || existingKeys.has(key)) return;
                         existingKeys.add(key);
                         this.entries.unshift(entry);
                         if (entry.Owner && !this.owners.includes(entry.Owner)) this.owners.push(entry.Owner);

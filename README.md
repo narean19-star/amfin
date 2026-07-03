@@ -32,3 +32,13 @@ If the frontend is hosted separately (for example, on GitHub Pages) and the back
 1. Push these changes to GitHub.
 2. Create a new Render web service from this repository.
 3. Render will use [render.yaml](render.yaml) to install dependencies and start the server.
+
+### Troubleshooting
+
+- If `GET /api/data` works but `POST /api/data` returns `403 Resource not accessible by personal access token`, your GitHub PAT does not have the required repo write permissions.
+- Create a PAT with `repo` scope and set it as `GITHUB_TOKEN` in your backend host.
+- This app is hybrid local/cloud by design: it writes `data.json` locally and also attempts GitHub sync when `GITHUB_TOKEN` is configured.
+- To use cloud sync with local fallback, set `GITHUB_SYNC_ENABLED=true` and `GITHUB_FALLBACK_ENABLED=true`.
+- If GitHub sync fails, the server still saves data in local `data.json`, and the frontend shows `Storage source: local`.
+- For a separate static frontend on GitHub Pages, set `window.CLOUD_API_BASE` in `index.html` to the backend URL before the app script loads.
+- The frontend already supports this pattern via `window.CLOUD_API_BASE || '/api'`.
