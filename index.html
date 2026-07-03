@@ -1806,7 +1806,12 @@
                 <button @click="exportExcel()" class="btn btn-success btn-sm">Export to Excel</button>
                 <button @click="backupJSON()" class="btn btn-outline btn-sm">Backup JSON</button>
                 <button @click="$refs.jsonRestore.click()" class="btn btn-outline btn-sm">Restore JSON</button>
+                <button @click="syncToCloud()" class="btn btn-cyan btn-sm">Sync Cloud</button>
+                <button @click="loadCloudData()" class="btn btn-outline btn-sm">Load Cloud</button>
                 <button @click="clearAllData()" class="btn btn-danger btn-sm">Clear All Data</button>
+            </div>
+            <div class="mt-3 text-xs text-slate-500">
+                Cloud status: <span :class="cloudAvailable ? 'text-emerald-500' : 'text-rose-500'" x-text="cloudStatus"></span>
             </div>
         </div>
     </div>
@@ -1818,6 +1823,7 @@ function accountingApp() {
         // State
         view: 'dashboard',
         isLoading: false,
+        apiBase: window.CLOUD_API_BASE || '/api',
         loadingMsg: '',
         progress: 0,
         sidebarOpen: false,
@@ -1876,6 +1882,11 @@ function accountingApp() {
         // Charts
         _charts: {},
         _persistTimer: null,
+        cloudSyncTimer: null,
+        cloudSyncing: false,
+        cloudAvailable: false,
+        cloudStatus: 'Local only',
+        _lastSaved: null,
 
         get viewTitle() {
             const titles = { dashboard: 'Dashboard', records: 'Sales Ledger', entry: 'Sale Entry', purchases: 'Purchases', cheques: 'Cheque Registry', cashflow: 'Expenses & Cashflow', analysis: 'P&L Analysis', debtors: 'Debtors & Creditors', financials: 'Financial Reports', master: 'Master Data' };
@@ -1918,6 +1929,7 @@ function accountingApp() {
                     this.items = d.items || [];
                     this.suppliers = d.suppliers || [];
                     this.expenseCategories = d.expenseCategories || this.expenseCategories;
+                    this._lastSaved = d.lastSaved || null;
                 } else {
                     // Try migrating from old v5/v6 format
                     const oldRaw = localStorage.getItem('am_sales_master_v1');
@@ -1941,19 +1953,139 @@ function accountingApp() {
             this.$watch('entries', () => { this.updateCharts(); });
             this.$watch('view', v => { if (v === 'dashboard' || v === 'analysis') setTimeout(() => this.updateCharts(), 80); });
             setTimeout(() => this.updateCharts(), 500);
+            await this.syncWithCloud();
             setTimeout(() => { this.isLoading = false; }, 300);
         },
 
         persist() {
             if (this._persistTimer) clearTimeout(this._persistTimer);
             this._persistTimer = setTimeout(() => {
-                const data = {
-                    entries: this.entries, purchases: this.purchases, expenses: this.expenses, cheques: this.cheques,
-                    owners: this.owners, customers: this.customers, items: this.items, suppliers: this.suppliers,
-                    expenseCategories: this.expenseCategories, lastSaved: new Date().toISOString()
-                };
-                localStorage.setItem('am_accounts_v7', JSON.stringify(data));
+                this.saveLocalData();
+                this.scheduleCloudSync();
             }, 250);
+        },
+
+        saveLocalData() {
+            const data = this.buildAppData();
+            localStorage.setItem('am_accounts_v7', JSON.stringify(data));
+            this._lastSaved = data.lastSaved;
+            this.cloudStatus = this.cloudAvailable ? 'Ready to sync' : 'Local only';
+        },
+
+        buildAppData() {
+            return {
+                entries: this.entries,
+                purchases: this.purchases,
+                expenses: this.expenses,
+                cheques: this.cheques,
+                owners: this.owners,
+                customers: this.customers,
+                items: this.items,
+                suppliers: this.suppliers,
+                expenseCategories: this.expenseCategories,
+                lastSaved: new Date().toISOString()
+            };
+        },
+
+        async syncWithCloud() {
+            this.cloudStatus = 'Checking cloud...';
+            try {
+                const cloud = await this.fetchCloudData();
+                if (!cloud) {
+                    this.cloudStatus = 'Cloud unavailable';
+                    this.cloudAvailable = false;
+                    return;
+                }
+                this.cloudAvailable = true;
+                const cloudTimestamp = cloud.data.lastSaved ? new Date(cloud.data.lastSaved).getTime() : 0;
+                const localTimestamp = this._lastSaved ? new Date(this._lastSaved).getTime() : 0;
+                if (cloudTimestamp > localTimestamp) {
+                    this.applyCloudData(cloud.data);
+                    this.saveLocalData();
+                    this.cloudStatus = 'Loaded newer cloud data';
+                    this.toast('Cloud sync', 'Loaded newer data from the cloud.', 'success');
+                } else if (localTimestamp > cloudTimestamp) {
+                    await this.pushCloudData();
+                    this.cloudStatus = 'Saved local data to cloud';
+                    this.toast('Cloud sync', 'Local changes uploaded to cloud.', 'success');
+                } else {
+                    this.cloudStatus = 'Cloud in sync';
+                }
+            } catch (err) {
+                this.cloudAvailable = false;
+                this.cloudStatus = 'Cloud unavailable';
+            }
+        },
+
+        async fetchCloudData() {
+            try {
+                const response = await fetch(this.apiBase + '/data');
+                if (!response.ok) throw new Error('Cloud data load failed');
+                return await response.json();
+            } catch (err) {
+                return null;
+            }
+        },
+
+        async pushCloudData() {
+            if (!this.cloudAvailable) {
+                await this.syncWithCloud();
+                if (!this.cloudAvailable) return;
+            }
+            try {
+                this.cloudSyncing = true;
+                this.cloudStatus = 'Syncing to cloud...';
+                const payload = this.buildAppData();
+                const response = await fetch(this.apiBase + '/data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error('Cloud save failed');
+                this.cloudStatus = 'Cloud in sync';
+            } catch (err) {
+                this.cloudStatus = 'Cloud save failed';
+                this.toast('Cloud error', 'Could not save data to cloud.', 'error');
+            } finally {
+                this.cloudSyncing = false;
+            }
+        },
+
+        scheduleCloudSync() {
+            if (this.cloudSyncTimer) clearTimeout(this.cloudSyncTimer);
+            this.cloudSyncTimer = setTimeout(() => {
+                this.pushCloudData();
+            }, 1200);
+        },
+
+        applyCloudData(data) {
+            this.entries = (data.entries || []).map(e => this.normalizeSaleEntry(e));
+            this.purchases = data.purchases || [];
+            this.expenses = data.expenses || [];
+            this.cheques = data.cheques || [];
+            this.owners = data.owners || [];
+            this.customers = data.customers || [];
+            this.items = data.items || [];
+            this.suppliers = data.suppliers || [];
+            this.expenseCategories = data.expenseCategories || this.expenseCategories;
+            this._lastSaved = data.lastSaved || null;
+        },
+
+        async loadCloudData() {
+            const cloud = await this.fetchCloudData();
+            if (!cloud) {
+                this.toast('Cloud', 'Cloud data not available.', 'error');
+                return;
+            }
+            this.cloudAvailable = true;
+            this.applyCloudData(cloud.data);
+            this.saveLocalData();
+            this.cloudStatus = 'Loaded cloud data';
+            this.toast('Cloud load', 'Cloud data loaded locally.', 'success');
+        },
+
+        async syncToCloud() {
+            await this.pushCloudData();
         },
 
         setView(v) { this.view = v; this.sidebarOpen = false; window.scrollTo({top:0,behavior:'smooth'}); },

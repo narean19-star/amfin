@@ -1,0 +1,21 @@
+{
+  "entries": [],
+  "purchases": [],
+  "expenses": [],
+  "cheques": [],
+  "owners": [],
+  "customers": [],
+  "items": [],
+  "suppliers": [],
+  "expenseCategories": [
+    "Rent",
+    "Salaries",
+    "Fuel & Transport",
+    "Electricity",
+    "Telephone",
+    "Maintenance",
+    "Stationery",
+    "Miscellaneous"
+  ],
+  "lastSaved": "2026-07-03T00:00:00.000Z"
+}

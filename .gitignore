@@ -5,6 +5,7 @@ node_modules/
 !.env.example
 .DS_Store
 npm-debug.log*
+.vscode/
 
 # ignore duplicate files created by editors, downloads, or GitHub
 404(1).html
