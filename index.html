@@ -8,14 +8,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AM Accounts v9">
     <meta name="theme-color" content="#0f172a">
-    <script>
-        // Set this value when the backend is hosted separately from the frontend.
-        // For GitHub Pages static hosting, set this to your backend API URL:
-        // window.CLOUD_API_BASE = 'https://your-backend-service.onrender.com/api';
-        window.CLOUD_API_BASE = window.CLOUD_API_BASE || '';
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -282,12 +278,10 @@
             Master Data
         </button>
     </nav>
-    <div class="p-3 border-t border-slate-800 space-y-1.5">
+    <div class="p-3 border-t border-slate-800 space-y-1.5 no-print">
         <button @click.prevent="$refs.xlsxImport.click()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Import Excel</button>
         <button @click.prevent="exportExcel()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export Excel</button>
-        <button @click.prevent="backupJSON()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Backup JSON</button>
         <input type="file" x-ref="xlsxImport" style="position:absolute;left:-9999px;top:-9999px;" @change="importExcel($event)" accept=".xlsx,.xls">
-        <input type="file" x-ref="jsonRestore" style="position:absolute;left:-9999px;top:-9999px;" @change="restoreJSON($event)" accept=".json">
     </div>
 </aside>
 
@@ -756,12 +750,14 @@
 
         <!-- Data Management -->
         <div class="card p-4">
-            <p class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Data Management</p>
+            <h3 class="text-sm font-bold mb-3 border-b pb-2">Data Management</h3>
             <div class="flex flex-wrap gap-2">
-                <button @click="backupJSON()" class="btn btn-outline btn-sm">Backup JSON</button>
-                <button @click="$refs.jsonRestore.click()" class="btn btn-outline btn-sm">Restore JSON</button>
-                <button @click="clearAllData()" class="btn btn-danger btn-sm">Clear All Data</button>
+                <button @click="forceSave()" class="btn btn-cyan btn-sm">Force Save to Cloud</button>
+                <button @click="init()" class="btn btn-outline btn-sm">Reload from Cloud</button>
+                <button @click="backupJSON()" class="btn btn-outline btn-sm">Download Local Backup (JSON)</button>
+                <button @click="clearAllData()" class="btn btn-danger btn-sm">Clear All Cloud Data</button>
             </div>
+            <p class="text-xs text-slate-500 mt-3">Your data is saved automatically. Use "Force Save" to push changes to the cloud immediately. Local backups are for your own records and cannot be restored directly into the cloud app.</p>
         </div>
     </div>
 
@@ -1232,7 +1228,7 @@
                     <input type="text" x-model="expenseForm.category" list="expenseCatList" class="fi" placeholder="Rent, Fuel, Salaries...">
                     <datalist id="expenseCatList"><template x-for="c in expenseCategories" :key="c"><option :value="c"></option></template></datalist>
                 </div>
-                <div><label class="fl">Description</label><input type="text" x-model="expenseForm.description" class="fi" placeholder="Details..."></div>
+                <div><label class="fl">Description</label><input type="text" x-model="expenseForm.description" @input.debounce.500ms="autoCategorizeExpense()" class="fi" placeholder="Details..."></div>
                 <div><label class="fl">Amount</label><input type="number" x-model.number="expenseForm.amount" class="fi" step="0.01"></div>
                 <div>
                     <label class="fl">Payment Mode</label>
@@ -1826,24 +1822,9 @@
         <div class="card p-4">
             <h3 class="text-sm font-bold mb-3 border-b pb-2">Data Management</h3>
             <div class="flex flex-wrap gap-3">
-                <button @click="$refs.xlsxImport.click()" class="btn btn-primary btn-sm">Import Excel</button>
-                <button @click="exportExcel()" class="btn btn-success btn-sm">Export to Excel</button>
-                <button @click="backupJSON()" class="btn btn-outline btn-sm">Backup JSON</button>
-                <button @click="$refs.jsonRestore.click()" class="btn btn-outline btn-sm">Restore JSON</button>
-                <button @click="syncToCloud()" class="btn btn-cyan btn-sm">Sync Cloud</button>
-                <button @click="loadCloudData()" class="btn btn-outline btn-sm">Load Cloud</button>
-                <button @click="syncWithCloud()" class="btn btn-secondary btn-sm">Manual Sync</button>
+            <button @click="forceSave()" class="btn btn-cyan btn-sm">Save to Database</button>
+            <button @click="init()" class="btn btn-outline btn-sm">Reload from Database</button>
                 <button @click="clearAllData()" class="btn btn-danger btn-sm">Clear All Data</button>
-            </div>
-            <div class="mt-3 text-xs text-slate-500">
-                Cloud status: <span :class="cloudAvailable ? 'text-emerald-500' : 'text-rose-500'" x-text="cloudStatus"></span>
-            </div>
-            <div class="mt-2 text-xs text-slate-500">
-                Storage source: <span class="font-mono" x-text="cloudStorage"></span>
-                <span x-show="cloudStorageDetails" class="text-slate-400"> - <span x-text="cloudStorageDetails"></span></span>
-            </div>
-            <div class="mt-2 text-xs text-slate-500">
-                Backend API: <span class="font-mono" x-text="apiBase"></span>
             </div>
         </div>
     </div>
@@ -1854,8 +1835,7 @@ function accountingApp() {
     return {
         // State
         view: 'dashboard',
-        isLoading: false,
-        apiBase: window.CLOUD_API_BASE || '/api',
+        isLoading: true,
         loadingMsg: '',
         progress: 0,
         sidebarOpen: false,
@@ -1877,6 +1857,16 @@ function accountingApp() {
         items: [],
         suppliers: [],
         expenseCategories: ['Rent', 'Salaries', 'Fuel & Transport', 'Electricity', 'Telephone', 'Maintenance', 'Stationery', 'Miscellaneous'],
+        expenseCategoryKeywords: {
+            'Fuel & Transport': ['fuel', 'petrol', 'diesel', 'transport', 'travel', 'bus', 'train', 'flight', 'taxi', 'uber'],
+            'Salaries': ['salary', 'payroll', 'wages'],
+            'Rent': ['rent', 'lease', 'office space'],
+            'Electricity': ['electricity', 'power bill'],
+            'Telephone': ['telephone', 'internet', 'mobile', 'phone bill', 'data'],
+            'Maintenance': ['maintenance', 'repair', 'service', 'amc'],
+            'Stationery': ['stationery', 'pen', 'paper', 'print', 'office supplies'],
+            'Miscellaneous': ['misc', 'sundry']
+        },
 
         // Search fields
         searchRecords: '',
@@ -1914,17 +1904,10 @@ function accountingApp() {
         // Charts
         _charts: {},
         _persistTimer: null,
-        cloudSyncTimer: null,
-        cloudSyncing: false,
-        cloudAvailable: false,
-        cloudStatus: 'Local only',
-        cloudStorage: 'local',
-        cloudStorageDetails: '',
-        _lastSaved: null,
 
         get viewTitle() {
             const titles = { dashboard: 'Dashboard', records: 'Sales Ledger', entry: 'Sale Entry', purchases: 'Purchases', cheques: 'Cheque Registry', cashflow: 'Expenses & Cashflow', analysis: 'P&L Analysis', debtors: 'Debtors & Creditors', financials: 'Financial Reports', master: 'Master Data' };
-            return titles[this.view] || 'AM Sales Pro v7';
+            return titles[this.view] || 'AM Sales Pro v9';
         },
 
         // ─── Formatters ─────────────────────────────────────────────
@@ -1943,71 +1926,50 @@ function accountingApp() {
         // ─── Init & Persist ─────────────────────────────────────────
         async init() {
             this.isLoading = true;
-            this.loadingMsg = 'Loading data...';
+            this.loadingMsg = 'Connecting to database...';
             this.progress = 20;
-            this.resetSaleForm();
-            this.resetPurchaseForm();
-            this.resetExpenseForm();
-            this.resetChequeForm();
+            this.resetSaleForm(); this.resetPurchaseForm(); this.resetExpenseForm(); this.resetChequeForm();
 
             try {
-                const raw = localStorage.getItem('am_accounts_v7');
-                if (raw) {
-                    const d = JSON.parse(raw);
-                    this.entries = (d.entries || []).map(e => this.normalizeSaleEntry(e));
-                    this.purchases = d.purchases || [];
-                    this.expenses = d.expenses || [];
-                    this.cheques = d.cheques || [];
-                    this.owners = d.owners || [];
-                    this.customers = d.customers || [];
-                    this.items = d.items || [];
-                    this.suppliers = d.suppliers || [];
-                    this.expenseCategories = d.expenseCategories || this.expenseCategories;
-                    this._lastSaved = d.lastSaved || null;
-                } else {
-                    // Try migrating from old v5/v6 format
-                    const oldRaw = localStorage.getItem('am_sales_master_v1');
-                    if (oldRaw) {
-                        const old = JSON.parse(oldRaw);
-                        this.entries = (old.entries || []).map(e => this.normalizeSaleEntry(e));
-                        this.owners = old.owners || [];
-                        this.customers = old.customers || [];
-                        this.items = old.items || [];
-                        this.expenseCategories = old.expenseCategories || this.expenseCategories;
-                        this.expenses = (old.expenses || []).map(e => ({ ...e, mode: e.mode || 'cash', type: e.type || 'expense', paidTo: e.paidTo || '', ref: e.ref || '' }));
-                        this.toast('Migration', 'Data migrated from v6. Please verify and save.', 'info');
-                        this.persist();
-                    }
-                }
+                const data = await loadDataFromSupabase();
+                this.applyCloudData(data);
+                this.toast('Connected', 'Data loaded from Supabase.', 'success');
             } catch (e) {
-                this.toast('Load Error', 'Could not load saved data: ' + e.message, 'error');
+                this.toast('Connection Error', 'Could not load from Supabase. Using local data. ' + e.message, 'error');
+                console.warn("Supabase load failed, falling back to localStorage.", e);
+                // Fallback to local storage if Supabase fails
+                try {
+                    let raw = localStorage.getItem('am_accounts_v9');
+                    if (raw) {
+                        const d = JSON.parse(raw);
+                        this.applyCloudData(d);
+                        this.toast('Offline Mode', 'Loaded data from local backup.', 'info');
+                    } else {
+                        // Try migrating from old v7 format
+                        raw = localStorage.getItem('am_accounts_v7');
+                        if (raw) {
+                            const d = JSON.parse(raw);
+                            this.applyCloudData(d);
+                            this.toast('Migration', 'Data migrated to new version. Please verify.', 'info');
+                            this.persist(); // Save the migrated data
+                        }
+                    }
+                } catch (localError) {
+                    this.toast('Fatal Error', 'Could not load any data: ' + localError.message, 'error');
+                }
             }
-
             this.progress = 100;
             this.$watch('entries', () => { this.updateCharts(); });
             this.$watch('view', v => { if (v === 'dashboard' || v === 'analysis') setTimeout(() => this.updateCharts(), 80); });
             setTimeout(() => this.updateCharts(), 500);
-            await this.syncWithCloud();
             setTimeout(() => { this.isLoading = false; }, 300);
         },
 
         persist() {
             if (this._persistTimer) clearTimeout(this._persistTimer);
-            this._persistTimer = setTimeout(() => {
-                this.saveLocalData();
-                this.scheduleCloudSync();
-            }, 250);
-        },
-
-        saveLocalData() {
-            const data = this.buildAppData();
-            localStorage.setItem('am_accounts_v7', JSON.stringify(data));
-            this._lastSaved = data.lastSaved;
-            this.cloudStatus = this.cloudAvailable ? 'Ready to sync' : 'Local only';
-        },
-
-        hasAnyData(data) {
-            return (data.entries?.length || 0) + (data.purchases?.length || 0) + (data.expenses?.length || 0) + (data.cheques?.length || 0) + (data.owners?.length || 0) + (data.customers?.length || 0) + (data.items?.length || 0) + (data.suppliers?.length || 0) + (data.expenseCategories?.length || 0) > 0;
+            this._persistTimer = setTimeout(async () => {
+                await this.forceSave();
+            }, 1000); // Debounce for 1 second
         },
 
         buildAppData() {
@@ -2025,99 +1987,6 @@ function accountingApp() {
             };
         },
 
-        async syncWithCloud() {
-            this.cloudStatus = 'Checking cloud...';
-            try {
-                const cloud = await this.fetchCloudData();
-                if (!cloud) {
-                    this.cloudStatus = 'Cloud unavailable';
-                    this.cloudAvailable = false;
-                    return;
-                }
-                this.cloudAvailable = true;
-                const cloudTimestamp = cloud.data.lastSaved ? new Date(cloud.data.lastSaved).getTime() : 0;
-                const localTimestamp = this._lastSaved ? new Date(this._lastSaved).getTime() : 0;
-                const localHasData = this.hasAnyData(this.buildAppData());
-                const cloudHasData = this.hasAnyData(cloud.data);
-                if (cloudTimestamp > localTimestamp || (!localHasData && cloudHasData)) {
-                    this.applyCloudData(cloud.data);
-                    this.saveLocalData();
-                    this.cloudStatus = 'Loaded cloud data';
-                    this.toast('Cloud sync', 'Loaded data from the cloud.', 'success');
-                } else if (localTimestamp > cloudTimestamp) {
-                    await this.pushCloudData();
-                    this.cloudStatus = 'Saved local data to cloud';
-                    this.toast('Cloud sync', 'Local changes uploaded to cloud.', 'success');
-                } else {
-                    this.cloudStatus = cloudHasData ? 'Cloud in sync' : 'Local only';
-                }
-            } catch (err) {
-                this.cloudAvailable = false;
-                this.cloudStatus = 'Cloud unavailable';
-            }
-        },
-
-        async fetchCloudData() {
-            try {
-                const response = await fetch(this.apiBase + '/data');
-                if (!response.ok) throw new Error('Cloud data load failed');
-                const result = await response.json();
-                this.cloudStorage = result.storage || 'unknown';
-                this.cloudStorageDetails = result.details || '';
-                this.cloudAvailable = result.cloudAvailable === true;
-                return result;
-            } catch (err) {
-                this.cloudAvailable = false;
-                this.cloudStorage = 'local';
-                this.cloudStorageDetails = '';
-                return null;
-            }
-        },
-
-        async pushCloudData() {
-            if (!this.cloudAvailable) {
-                await this.syncWithCloud();
-                if (!this.cloudAvailable) return;
-            }
-            try {
-                this.cloudSyncing = true;
-                this.cloudStatus = 'Syncing to cloud...';
-                const payload = this.buildAppData();
-                const response = await fetch(this.apiBase + '/data', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!response.ok) throw new Error('Cloud save failed');
-                if (response.ok) {
-                    const result = await response.json();
-                    this.cloudStorageDetails = result.details || '';
-                    if (result.fallback) {
-                        this.cloudStatus = 'Saved locally due to GitHub error';
-                        this.cloudStorage = 'local';
-                        this.toast('Cloud sync', 'Data saved locally because GitHub write failed.', 'warning');
-                    } else {
-                        this.cloudStatus = 'Cloud in sync';
-                        this.cloudStorage = result.storage || 'github';
-                    }
-                } else {
-                    throw new Error('Cloud save failed');
-                }
-            } catch (err) {
-                this.cloudStatus = 'Cloud save failed';
-                this.toast('Cloud error', 'Could not save data to cloud.', 'error');
-            } finally {
-                this.cloudSyncing = false;
-            }
-        },
-
-        scheduleCloudSync() {
-            if (this.cloudSyncTimer) clearTimeout(this.cloudSyncTimer);
-            this.cloudSyncTimer = setTimeout(() => {
-                this.pushCloudData();
-            }, 1200);
-        },
-
         applyCloudData(data) {
             this.entries = (data.entries || []).map(e => this.normalizeSaleEntry(e));
             this.purchases = data.purchases || [];
@@ -2128,31 +1997,32 @@ function accountingApp() {
             this.items = data.items || [];
             this.suppliers = data.suppliers || [];
             this.expenseCategories = data.expenseCategories || this.expenseCategories;
-            this._lastSaved = data.lastSaved || null;
         },
 
-        async loadCloudData() {
-            const cloud = await this.fetchCloudData();
-            if (!cloud) {
-                this.toast('Cloud', 'Cloud data not available.', 'error');
-                return;
+        async forceSave() {
+            if (this._persistTimer) clearTimeout(this._persistTimer);
+            const data = this.buildAppData();
+            // Always save to local storage as a backup
+            localStorage.setItem('am_accounts_v9', JSON.stringify(data));
+            
+            // Attempt to save to Supabase
+            try {
+                this.loadingMsg = 'Saving...';
+                this.isLoading = true;
+                await saveDataToSupabase(data);
+                this.toast('Saved', 'Changes saved to the database.', 'success');
+            } catch (e) {
+                this.toast('Save Error', 'Failed to save to database. Changes are saved locally.', 'error');
+            } finally {
+                this.isLoading = false;
             }
-            this.cloudAvailable = true;
-            this.applyCloudData(cloud.data);
-            this.saveLocalData();
-            this.cloudStatus = 'Loaded cloud data';
-            this.toast('Cloud load', 'Cloud data loaded locally.', 'success');
-        },
-
-        async syncToCloud() {
-            await this.pushCloudData();
         },
 
         setView(v) { this.view = v; this.sidebarOpen = false; window.scrollTo({top:0,behavior:'smooth'}); },
 
         normalizeSaleEntry(e) {
             const numKeys = ['Pkgs','P.Kilo','G.Kilo','Tare','N.Kilo','Rate','Kooli','C.Amount','A.Amount','Cash','Cheque','Credit Given','Credit Received','Balance'];
-            numKeys.forEach(k => { e[k] = Number(e[k] || 0); });
+            numKeys.forEach(k => { e[k] = Number(e[k] || 0); }); // Ensure all numeric fields are numbers
             e.Date = e.Date || new Date().toISOString().split('T')[0];
             e.Owner = String(e.Owner || '').trim();
             e.Customer = String(e.Customer || '').trim();
@@ -2444,7 +2314,7 @@ function accountingApp() {
 
         // ─── Sale Entry ──────────────────────────────────────────────
         resetSaleForm() {
-            this.saleForm = { Date: new Date().toISOString().split('T')[0], 'Bill No': '', Owner: '', Customer: '', Item: '', Mark: '', N: '', Pkgs: 0, 'P.Kilo': 0, 'G.Kilo': 0, Tare: 0, 'N.Kilo': 0, Rate: 0, Kooli: 0, 'C.Amount': 0, 'A.Amount': 0, Cash: 0, Cheque: 0, 'Credit Given': 0, 'Credit Received': 0, Balance: 0, Remark: '', creditGivenIsManual: false };
+            this.saleForm = { Date: new Date().toISOString().split('T')[0], 'Bill No': '', Owner: '', Customer: '', Item: '', Mark: '', N: '', Pkgs: 0, 'P.Kilo': 0, 'G.Kilo': 0, Tare: 0, 'N.Kilo': 0, Rate: 0, Kooli: 0, 'C.Amount': 0, 'A.Amount': 0, Cash: 0, Cheque: 0, 'Credit Given': 0, 'Credit Received': 0, Balance: 0, Remark: '' };
             this.billSearch = '';
             this.foundBill = null;
             this.newOwnerMode = false;
@@ -2466,13 +2336,9 @@ function accountingApp() {
             const aAmt = +this.saleForm['A.Amount'] || 0;
             const cash = +this.saleForm.Cash || 0;
             const cheque = +this.saleForm.Cheque || 0;
-
-            if (!this.saleForm.creditGivenIsManual) {
-                const credit = aAmt - cash - cheque;
-                this.saleForm['Credit Given'] = parseFloat(credit.toFixed(2));
-            }
+            const creditReceived = +this.saleForm['Credit Received'] || 0;
             
-            const paid = cash + cheque + (+this.saleForm['Credit Received'] || 0);
+            const paid = cash + cheque + creditReceived;
             this.saleForm.Balance = parseFloat((aAmt - paid).toFixed(2));
         },
 
@@ -2483,7 +2349,7 @@ function accountingApp() {
         },
 
         loadBillIntoForm(e) {
-            this.saleForm = { ...e, creditGivenIsManual: true };
+            this.saleForm = { ...e };
             this.foundBill = null;
             this.billSearch = '';
         },
@@ -2505,7 +2371,7 @@ function accountingApp() {
                 if (idx !== -1) this.entries[idx] = entry;
                 this.toast('Updated', `Bill #${entry['Bill No']} updated.`, 'success');
             } else {
-                entry.id = Date.now() + Math.random();
+                entry.id = crypto.randomUUID();
                 this.entries.unshift(entry);
                 this.toast('Saved', `Bill #${entry['Bill No']} saved for ${customer}.`, 'success');
             }
@@ -2548,7 +2414,7 @@ function accountingApp() {
                 if (idx !== -1) this.purchases[idx] = p;
                 this.toast('Updated', 'Purchase record updated.', 'success');
             } else {
-                p.id = Date.now() + Math.random();
+                p.id = crypto.randomUUID();
                 this.purchases.unshift(p);
                 this.toast('Saved', 'Purchase recorded.', 'success');
             }
@@ -2566,6 +2432,24 @@ function accountingApp() {
             this.expenseForm = { date: new Date().toISOString().split('T')[0], category: '', description: '', amount: 0, mode: 'cash', paidTo: '', type: 'expense', ref: '' };
         },
 
+        autoCategorizeExpense() {
+            // Only suggest a category if one isn't already set
+            if (this.expenseForm.category) return;
+
+            const description = (this.expenseForm.description || '').toLowerCase();
+            if (!description) return;
+
+            for (const category in this.expenseCategoryKeywords) {
+                for (const keyword of this.expenseCategoryKeywords[category]) {
+                    if (description.includes(keyword)) {
+                        this.expenseForm.category = category;
+                        this.toast('Auto-categorized', `Set category to "${category}"`, 'info');
+                        return; // Stop after first match
+                    }
+                }
+            }
+        },
+
         saveExpense() {
             if (!this.expenseForm.category || !this.expenseForm.amount) return this.toast('Validation', 'Category and amount are required.', 'error');
             const e = { ...this.expenseForm };
@@ -2574,7 +2458,7 @@ function accountingApp() {
                 if (idx !== -1) this.expenses[idx] = e;
                 this.toast('Updated', 'Expense updated.', 'success');
             } else {
-                e.id = Date.now() + Math.random();
+                e.id = crypto.randomUUID();
                 this.expenses.unshift(e);
                 this.toast('Saved', `${e.category} expense saved.`, 'success');
             }
@@ -2599,7 +2483,7 @@ function accountingApp() {
                 if (idx !== -1) this.cheques[idx] = c;
                 this.toast('Updated', 'Cheque record updated.', 'success');
             } else {
-                c.id = Date.now() + Math.random();
+                c.id = crypto.randomUUID();
                 this.cheques.unshift(c);
                 this.toast('Saved', `Cheque #${c.chequeNo} recorded.`, 'success');
             }
@@ -2623,9 +2507,36 @@ function accountingApp() {
             this[list].push(v);
             this[list].sort();
             this.persist();
+            this.toast('Added', `"${v}" added to ${list}.`, 'success');
         },
         removeMasterItem(list, val) {
             if (!confirm('Remove "' + val + '"?')) return;
+
+            let isInUse = false;
+            const checkIn = (records, field) => records.some(r => r[field] === val);
+
+            switch (list) {
+                case 'owners':
+                    isInUse = checkIn(this.entries, 'Owner');
+                    break;
+                case 'customers':
+                    isInUse = checkIn(this.entries, 'Customer');
+                    break;
+                case 'items':
+                    isInUse = checkIn(this.entries, 'Item') || checkIn(this.purchases, 'item');
+                    break;
+                case 'suppliers':
+                    isInUse = checkIn(this.purchases, 'supplier');
+                    break;
+                case 'expenseCategories':
+                    isInUse = checkIn(this.expenses, 'category');
+                    break;
+            }
+
+            if (isInUse) {
+                return this.toast('Cannot Delete', `"${val}" is in use and cannot be removed.`, 'error');
+            }
+
             this[list] = this[list].filter(x => x !== val);
             this.persist();
         },
@@ -2678,7 +2589,7 @@ function accountingApp() {
         // ─── Print Reports ────────────────────────────────────────────
         printReport(html) {
             const w = window.open('', '_blank');
-            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AM Sales Pro v7</title><style>
+            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AM Sales Pro v9</title><style>
                 body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#0f172a;font-size:10px}
                 h1{color:#1d4ed8;font-size:16px;margin:0}h2{font-size:12px;color:#334155;margin:4px 0 0}
                 table{width:100%;border-collapse:collapse;margin-top:12px;font-size:9px}
@@ -2697,7 +2608,7 @@ function accountingApp() {
         rptHeader(title, subtitle = '') {
             const range = (this.filterFrom || this.filterTo) ? ` | Range: ${this.filterFrom || 'Start'} to ${this.filterTo || 'Present'}` : '';
             const sub = subtitle ? `<h3 style="font-size:10px;color:#475569;margin:2px 0 0">${subtitle}</h3>` : '';
-            return `<div class="rpt-hdr"><div><h1>AM SALES PRO v7</h1><h2>${title}${range}</h2>${sub}</div><div style="font-size:9px;color:#64748b">Generated: ${new Date().toLocaleString()}</div></div>`;
+            return `<div class="rpt-hdr"><div><h1>AM SALES PRO v9</h1><h2>${title}${range}</h2>${sub}</div><div style="font-size:9px;color:#64748b">Generated: ${new Date().toLocaleString()}</div></div>`;
         },
 
         printSummaryTable(type, data, grand) {
@@ -2993,7 +2904,7 @@ function accountingApp() {
         // ─── Import / Export ─────────────────────────────────────────
         importExcel(event) {
             const file = event.target.files?.[0];
-            if (!file) return;
+            if (!file) { event.target.value = ''; return; }
             this.isLoading = true;
             this.loadingMsg = 'Importing Excel...';
             this.progress = 10;
@@ -3085,12 +2996,12 @@ function accountingApp() {
                 const ch = ['date', 'chequeNo', 'bank', 'party', 'amount', 'type', 'status', 'clearDate', 'remark'];
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([ch, ...this.cheques.map(c => ch.map(h => c[h] ?? ''))]), 'Cheques');
             }
-            XLSX.writeFile(wb, `AM_Sales_Pro_v7_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.writeFile(wb, `AM_Sales_Pro_v9_${new Date().toISOString().split('T')[0]}.xlsx`);
             this.toast('Exported', 'Excel file downloaded with all sheets.', 'success');
         },
 
         backupJSON() {
-            const data = { entries: this.entries, purchases: this.purchases, expenses: this.expenses, cheques: this.cheques, owners: this.owners, customers: this.customers, items: this.items, suppliers: this.suppliers, expenseCategories: this.expenseCategories, exportedAt: new Date().toISOString(), version: 7 };
+            const data = { entries: this.entries, purchases: this.purchases, expenses: this.expenses, cheques: this.cheques, owners: this.owners, customers: this.customers, items: this.items, suppliers: this.suppliers, expenseCategories: this.expenseCategories, exportedAt: new Date().toISOString(), version: 9 };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -3101,7 +3012,7 @@ function accountingApp() {
 
         restoreJSON(event) {
             const file = event.target.files?.[0];
-            if (!file) return;
+            if (!file) { event.target.value = ''; return; }
             if (!confirm('Restore will overwrite current data. Continue?')) { event.target.value = ''; return; }
             const reader = new FileReader();
             reader.onload = (ev) => {
@@ -3128,13 +3039,25 @@ function accountingApp() {
         },
 
         clearAllData() {
-            if (!confirm('⚠️ This will permanently delete ALL data. Export a backup first!\n\nAre you absolutely sure?')) return;
-            if (!confirm('FINAL CONFIRMATION: Delete all data?')) return;
-            this.entries = []; this.purchases = []; this.expenses = []; this.cheques = [];
-            this.owners = []; this.customers = []; this.items = []; this.suppliers = [];
-            this.persist();
-            this.toast('Cleared', 'All data has been erased.', 'info');
-            this.setView('dashboard');
+            if (!confirm('⚠️ This will permanently delete ALL data from the cloud database. This cannot be undone.\n\nAre you absolutely sure?')) return;
+            if (prompt("To confirm, type DELETE below:") !== 'DELETE') {
+                this.toast('Cancelled', 'Clear data operation was cancelled.', 'info');
+                return;
+            }
+
+            this.isLoading = true;
+            this.loadingMsg = 'Deleting all cloud data...';
+            clearAllSupabaseData().then(() => {
+                this.entries = []; this.purchases = []; this.expenses = []; this.cheques = [];
+                this.owners = []; this.customers = []; this.items = []; this.suppliers = [];
+                localStorage.removeItem('am_accounts_v9');
+                this.toast('Success', 'All cloud and local data has been erased.', 'success');
+                this.init(); // Re-initialize the app
+            }).catch(e => {
+                this.toast('Error', 'Could not clear cloud data: ' + e.message, 'error');
+            }).finally(() => {
+                this.isLoading = false;
+            });
         }
     };
 }

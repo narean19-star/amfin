@@ -32,8 +32,6 @@ const app = express();
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '5mb' }));
-app.use(express.static(rootDir));
-
 function getDefaultData() {
   return {
     entries: [],
@@ -61,11 +59,6 @@ async function readLocalData() {
 async function writeLocalData(payload) {
   await fs.promises.writeFile(LOCAL_DATA_PATH, JSON.stringify(payload, null, 2), 'utf8');
 }
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(rootDir, 'index.html'));
-});
-
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
@@ -168,6 +161,12 @@ app.post('/api/data', async (req, res) => {
   }
 
   return res.json({ ok: true, storage: 'local' });
+});
+
+app.use(express.static(rootDir));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(rootDir, 'index.html'));
 });
 
 app.get('*', (req, res) => {

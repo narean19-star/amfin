@@ -2,43 +2,16 @@
 
 ## Deployment
 
-This app is now prepared for online hosting in two ways:
+This app is a static frontend that connects directly to a Supabase backend for data storage.
 
-- Static frontend: the existing GitHub Pages workflow in [.github/workflows/deploy.yml](.github/workflows/deploy.yml) will publish the site from the repository root.
-- Optional backend: the `server/` folder is included for GitHub sync. The frontend now supports a separate backend host via `window.CLOUD_API_BASE`, so cloud sync can work even when the static site is hosted on GitHub Pages.
+The GitHub Pages workflow in .github/workflows/deploy.yml will publish the site from the repository root.
 
-### Required environment variables for the server
+### Required Supabase Configuration
 
-Set these in your hosting provider:
+To run this application, you need a Supabase project.
 
-- `GITHUB_TOKEN` — a GitHub personal access token with `repo` access
-- `GITHUB_OWNER` — repository owner
-- `GITHUB_REPO` — repository name
-- `GITHUB_BRANCH` — default branch, usually `main`
-- `GITHUB_DATA_PATH` — storage file path, usually `data.json`
+1. Create a project on supabase.com.
+2. In the SQL Editor, run the schema scripts to create the necessary tables.
+3. In `js/supabase-client.js`, replace the placeholder values with your **Project URL** and **anon public key** from your Supabase project's API settings.
 
-A starter `data.json` file is already included at the repository root to make the first cloud sync attempt succeed.
-
-If the frontend is hosted separately (for example, on GitHub Pages) and the backend is deployed on Render, set the API base URL before the app script loads in `index.html`:
-
-```html
-<script>
-  window.CLOUD_API_BASE = 'https://your-backend-service.onrender.com/api'
-</script>
-```
-
-### Quick deploy to Render
-
-1. Push these changes to GitHub.
-2. Create a new Render web service from this repository.
-3. Render will use [render.yaml](render.yaml) to install dependencies and start the server.
-
-### Troubleshooting
-
-- If `GET /api/data` works but `POST /api/data` returns `403 Resource not accessible by personal access token`, your GitHub PAT does not have the required repo write permissions.
-- Create a PAT with `repo` scope and set it as `GITHUB_TOKEN` in your backend host.
-- This app is hybrid local/cloud by design: it writes `data.json` locally and also attempts GitHub sync when `GITHUB_TOKEN` is configured.
-- To use cloud sync with local fallback, set `GITHUB_SYNC_ENABLED=true` and `GITHUB_FALLBACK_ENABLED=true`.
-- If GitHub sync fails, the server still saves data in local `data.json`, and the frontend shows `Storage source: local`.
-- For a separate static frontend on GitHub Pages, set `window.CLOUD_API_BASE` in `index.html` to the backend URL before the app script loads.
-- The frontend already supports this pattern via `window.CLOUD_API_BASE || '/api'`.
+**Important**: Never commit your Supabase keys directly into the `supabase-client.js` file if your repository is public. For public projects, consider loading these from a configuration file that is not checked into source control, or use environment variables during a build step.
