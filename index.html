@@ -3010,34 +3010,6 @@ function accountingApp() {
             this.toast('Backup', 'JSON backup downloaded.', 'success');
         },
 
-        restoreJSON(event) {
-            const file = event.target.files?.[0];
-            if (!file) { event.target.value = ''; return; }
-            if (!confirm('Restore will overwrite current data. Continue?')) { event.target.value = ''; return; }
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                try {
-                    const d = JSON.parse(ev.target.result);
-                    this.entries = (d.entries || []).map(e => this.normalizeSaleEntry(e));
-                    this.purchases = d.purchases || [];
-                    this.expenses = d.expenses || [];
-                    this.cheques = d.cheques || [];
-                    this.owners = d.owners || [];
-                    this.customers = d.customers || [];
-                    this.items = d.items || [];
-                    this.suppliers = d.suppliers || [];
-                    this.expenseCategories = d.expenseCategories || this.expenseCategories;
-                    this.persist();
-                    this.toast('Restored', 'Data restored from JSON backup.', 'success');
-                    this.setView('dashboard');
-                } catch (err) {
-                    this.toast('Restore Error', err.message, 'error');
-                }
-                event.target.value = '';
-            };
-            reader.readAsText(file);
-        },
-
         clearAllData() {
             if (!confirm('⚠️ This will permanently delete ALL data from the cloud database. This cannot be undone.\n\nAre you absolutely sure?')) return;
             if (prompt("To confirm, type DELETE below:") !== 'DELETE') {

@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://tnjnxuxpmyqvohkmkirp.supabase.co'; // From Project Settings -> API
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuam54dXhwbXlxdm9oa21raXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNzA3MzgsImV4cCI6MjA5ODc0NjczOH0.QXUmD59fOOnCoyjwOVOlykPM0WVcoIJAyOtDNpA9EY4'; // From Project Settings -> API
+const SUPABASE_URL = '__SUPABASE_URL__'; // Replaced by GitHub Actions
+const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__'; // Replaced by GitHub Actions
 
 const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

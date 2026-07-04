@@ -5,13 +5,19 @@ const { randomUUID } = require('crypto');
 
 // WARNING: Use the service_role key, which has admin privileges.
 // Do NOT expose this in your frontend or commit it to git.
-const SUPABASE_URL = 'https://tnjnxuxpmyqvohkmkirp.supabase.co';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuam54dXhwbXlxdm9oa21raXJwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzE3MDczOCwiZXhwIjoyMDk4NzQ2NzM4fQ.uwc5n7PnCUA4fd25R4EHmhkM8X78ZxAdGqMF3uMz84k';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables must be set.');
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 async function migrate() {
   const dataPath = path.resolve(__dirname, '..', 'data.json');
+  if (!fs.existsSync(dataPath)) { console.log('data.json not found, skipping migration.'); return; }
   const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
 
   console.log('Starting migration...');

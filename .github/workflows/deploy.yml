@@ -25,6 +25,14 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Inject Supabase secrets
+        run: |
+          sed -i 's|__SUPABASE_URL__|${{ secrets.SUPABASE_URL }}|g' supabase-client.js
+          sed -i 's|__SUPABASE_ANON_KEY__|${{ secrets.SUPABASE_ANON_KEY }}|g' supabase-client.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
       - name: Prepare artifact
         run: |
           mkdir -p _site
