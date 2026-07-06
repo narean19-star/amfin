@@ -4,9 +4,19 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-      // Redirect to the root index.html to let the client-side router handle the path.
-      sessionStorage.redirect = location.href;
-      location.href = '/amfin/'; // IMPORTANT: Change 'amfin' to your repository name
+      // Redirect to the root index.html to let the client-side router handle the path,
+      // preserving the original path for potential client-side routing.
+      // This dynamically determines the base path (repo name) from the URL.
+      const segments = location.pathname.split('/').filter(s => s.length > 0);
+      const repoName = segments[0];
+      const viewName = segments[1];
+
+      // Store the intended view if it exists, so the main app can pick it up on load.
+      if (viewName) {
+        sessionStorage.setItem('redirectView', viewName);
+      }
+
+      location.href = repoName ? `/${repoName}/` : '/';
     </script>
   </head>
   <body>

@@ -1,0 +1,43 @@
+Folder PATH listing for volume OS
+Volume serial number is XXXX-XXXX
+C:\USERS\NAREA\ONEDRIVE\DOCUMENTS\GITHUB\AMFIN
+├───.github
+│   └───workflows
+│           deploy.yml
+├───css
+│       style.css
+├───js
+│       app.js
+├───server
+│   └───node_modules
+│       ├───@octokit
+│       │   └───plugin-rest-endpoint-methods
+│       │       └───dist-types
+│       │           └───generated
+│       │                   method-types.d.ts
+│       ├───cookie
+│       │       SECURITY.md
+│       ├───dotenv
+│       │   │   README.md
+│       │   └───lib
+│       │           main.d.ts
+│       ├───finalhandler
+│       │       SECURITY.md
+│       └───send
+│           │   LICENSE
+│           │   README.md
+│           │   SECURITY.md
+│           └───node_modules
+│               └───ms
+│                       readme.md
+├───404.html
+├───apple-touch-icon.png
+├───data.json
+├───groq-client.js
+├───index.html
+├───local-secrets.js
+├───manifest.json
+├───migrate.js
+├───README.md
+├───schema.sql
+└───supabase-client.js

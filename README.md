@@ -1,7 +1,6 @@
 # amfin
 
 ## Deployment
-
 This app is a static frontend that connects directly to a Supabase backend for data storage.
 
 The GitHub Pages workflow in .github/workflows/deploy.yml will publish the site from the repository root.
@@ -17,6 +16,7 @@ To run this application, you need a Supabase project.
     *   Create two new repository secrets:
         *   `SUPABASE_URL`: Your Supabase project URL (e.g., `https://<project-id>.supabase.co`).
         *   `SUPABASE_ANON_KEY`: Your Supabase `anon` public key.
+        *   `GROQ_API_KEY`: Your Groq API key for the AI Assistant feature.
     *   These secrets will be securely injected into the application during deployment.
 4.  **(Optional) Run Data Migration**: To migrate existing data from `data.json`, run the migration script locally. You must set environment variables for this command:
     ```bash

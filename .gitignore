@@ -1,14 +1,5 @@
-node_modules/
-.venv/
-.env
-.env.*
-!.env.example
-.DS_Store
-npm-debug.log*
-.vscode/
+# Ignore local development secrets to prevent them from being committed to git.
+local-secrets.js
 
-# ignore duplicate files created by editors, downloads, or GitHub
-404(1).html
-manifest(1).json
-README(1).md
-.nojekyll(1)
+# Ignore node modules, which might be used for local scripts like the migrator.
+/node_modules

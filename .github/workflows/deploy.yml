@@ -25,18 +25,31 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Inject Supabase secrets
+      - name: Inject secrets
+        # This step replaces placeholders in the JS files with secrets
         run: |
           sed -i 's|__SUPABASE_URL__|${{ secrets.SUPABASE_URL }}|g' supabase-client.js
           sed -i 's|__SUPABASE_ANON_KEY__|${{ secrets.SUPABASE_ANON_KEY }}|g' supabase-client.js
+          sed -i 's|__GROQ_API_KEY__|${{ secrets.GROQ_API_KEY }}|g' groq-client.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
       - name: Prepare artifact
         run: |
-          mkdir -p _site
-          cp index.html 404.html supabase-client.js _site/
+          # Create the directory structure for the static site
+          mkdir -p _site/css _site/js _site/images
+
+          # Copy root files into the site directory
+          cp index.html manifest.json supabase-client.js groq-client.js _site/
+          [ -f 404.html ] && cp 404.html _site/
+
+          # Copy assets into their respective directories to match paths in index.html
+          cp css/style.css _site/css/
+          cp app.js _site/js/app.js
+          # Copy the PWA icon if it exists
+          [ -f images/icon-512.png ] && cp images/icon-512.png _site/images/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

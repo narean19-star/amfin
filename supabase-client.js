@@ -1,5 +1,6 @@
-const SUPABASE_URL = '__SUPABASE_URL__'; // Replaced by GitHub Actions
-const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__'; // Replaced by GitHub Actions
+// Use local config for development if it exists, otherwise use deployment placeholders.
+const SUPABASE_URL = window.localConfig?.SUPABASE_URL || '__SUPABASE_URL__';
+const SUPABASE_ANON_KEY = window.localConfig?.SUPABASE_ANON_KEY || '__SUPABASE_ANON_KEY__';
 
 const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
