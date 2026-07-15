@@ -1,15 +1,19 @@
 {
   "name": "AM Sales | Pro Accounting v10",
-  "short_name": "AM Sales v10",
-  "description": "A responsive sales ledger dashboard with Excel export, PDF generation, and analytics.",
+  "short_name": "AM Accounts",
+  "description": "A progressive web app for accounting.",
   "start_url": ".",
-  "scope": ".",
   "display": "standalone",
-  "background_color": "#f8fafc",
+  "background_color": "#ffffff",
   "theme_color": "#4f46e5",
   "icons": [
     {
-      "src": "images/icon-512.png",
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

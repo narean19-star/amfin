@@ -667,9 +667,8 @@
             <div id="sales-records-all-panel" role="tabpanel" aria-labelledby="sales-records-all-tab" :hidden="recordsTab !== 'all'" class="overflow-auto">
                 <table class="tbl">
                     <thead><tr>
-                        <th>Date</th><th>Bill#</th><th>Owner</th><th>Customer</th><th>Item</th><th>Mark</th><th>N</th>
-                        <th class="text-right">Pkgs</th><th class="text-right">P.Kilo</th><th class="text-right">G.Kilo</th><th class="text-right">Tare</th>
-                        <th class="text-right">N.Kg</th><th class="text-right">Rate</th><th class="text-right">C.Amt</th>
+                        <th>Date</th><th>Bill#</th><th>Owner</th><th>Customer</th><th>Item</th><th>Mark</th><th>N</th><th class="text-right">Pkgs</th><th class="text-right">P.Kilo</th><th class="text-right">G.Kilo</th><th class="text-right">Tare</th>
+                        <th class="text-right">N.Kg</th><th class="text-right">Rate</th><th class="text-right">Kooli</th><th class="text-right">C.Amt</th>
                         <th class="text-right">A.Amt</th><th class="text-right">Cash</th><th class="text-right">Cheque</th>
                         <th class="text-right">Cr. Given</th><th class="text-right">Cr. Recv</th>
                         <th class="text-right">Balance</th><th>Remark</th><th class="text-center">Actions</th>
@@ -689,6 +688,7 @@
                                 <td class="text-right num" x-text="fn(e['G.Kilo'])"></td>
                                 <td class="text-right num" x-text="fn(e.Tare)"></td>
                                 <td class="text-right num" x-text="fn(e['N.Kilo'])"></td>
+                                <td class="text-right num" x-text="fn(e.Kooli)"></td>
                                 <td class="text-right num" x-text="fn(e.Rate)"></td>
                                 <td class="text-right num text-emerald-600 font-bold" x-text="fn(e['C.Amount'])"></td>
                                 <td class="text-right num" x-text="fn(e['A.Amount'])"></td>
@@ -708,7 +708,7 @@
                             </tr>
                         </template>
                         <template x-if="filteredSalesRecords.length===0">
-                            <tr><td colspan="13" class="text-center py-12 text-slate-400 text-sm">No records found</td></tr>
+                            <tr><td colspan="23" class="text-center py-12 text-slate-400 text-sm">No records found</td></tr>
                         </template>
                     </tbody>
                     <tfoot x-show="filteredSalesRecords.length>0">
@@ -736,9 +736,8 @@
             <div id="sales-records-outstanding-panel" role="tabpanel" aria-labelledby="sales-records-outstanding-tab" :hidden="recordsTab !== 'outstanding'" class="overflow-auto">
                 <table class="tbl">
                     <thead><tr>
-                        <th>Date</th><th>Bill#</th><th>Owner</th><th>Customer</th><th>Item</th><th>Mark</th><th>N</th>
-                        <th class="text-right">Pkgs</th><th class="text-right">P.Kilo</th><th class="text-right">G.Kilo</th><th class="text-right">Tare</th>
-                        <th class="text-right">N.Kg</th><th class="text-right">Rate</th><th class="text-right">C.Amt</th>
+                        <th>Date</th><th>Bill#</th><th>Owner</th><th>Customer</th><th>Item</th><th>Mark</th><th>N</th><th class="text-right">Pkgs</th><th class="text-right">P.Kilo</th><th class="text-right">G.Kilo</th><th class="text-right">Tare</th>
+                        <th class="text-right">N.Kg</th><th class="text-right">Rate</th><th class="text-right">Kooli</th><th class="text-right">C.Amt</th>
                         <th class="text-right">A.Amt</th><th class="text-right">Cash</th><th class="text-right">Cheque</th>
                         <th class="text-right">Cr. Given</th><th class="text-right">Cr. Recv</th>
                         <th class="text-right">Balance</th><th>Remark</th><th class="text-center">Actions</th>
@@ -758,6 +757,7 @@
                                 <td class="text-right num" x-text="fn(e['G.Kilo'])"></td>
                                 <td class="text-right num" x-text="fn(e.Tare)"></td>
                                 <td class="text-right num" x-text="fn(e['N.Kilo'])"></td>
+                                <td class="text-right num" x-text="fn(e.Kooli)"></td>
                                 <td class="text-right num" x-text="fn(e.Rate)"></td>
                                 <td class="text-right num text-emerald-600 font-bold" x-text="fn(e['C.Amount'])"></td>
                                 <td class="text-right num" x-text="fn(e['A.Amount'])"></td>
@@ -777,29 +777,25 @@
                             </tr>
                         </template>
                         <template x-if="filteredSalesRecords.filter(r => (+r.Balance || 0) > 0).length===0">
-                            <tr><td colspan="13" class="text-center py-12 text-slate-400 text-sm">No outstanding records found</td></tr>
-                            <tr><td colspan="22" class="text-center py-12 text-slate-400 text-sm">No paid records found</td></tr>
+                            <tr><td colspan="23" class="text-center py-12 text-slate-400 text-sm">No outstanding records found</td></tr>
                         </template>
                     </tbody>
                 </table>
             </div>
             <div id="sales-records-paid-panel" role="tabpanel" aria-labelledby="sales-records-paid-tab" :hidden="recordsTab !== 'paid'" class="overflow-auto">
                 <table class="tbl">
-                    <thead><tr>
-                        <th>Date</th><th>Bill#</th><th>Owner</th><th>Customer</th><th>Item</th><th>Mark</th><th>N</th>
-                        <th class="text-right">Pkgs</th><th class="text-right">P.Kilo</th><th class="text-right">G.Kilo</th><th class="text-right">Tare</th>
-                        <th class="text-right">N.Kg</th><th class="text-right">Rate</th><th class="text-right">C.Amt</th>
+                    <thead><tr><th>Date</th><th>Bill#</th><th>Owner</th><th>Customer</th><th>Item</th><th>Mark</th><th>N</th>
+                        <th class="text-right">Pkgs</th><th class="text-right">P.Kilo</th><th class="text-right">G.Kilo</th><th class="text-right">Tare</th><th class="text-right">N.Kg</th><th class="text-right">Rate</th><th class="text-right">Kooli</th><th class="text-right">C.Amt</th>
                         <th class="text-right">A.Amt</th><th class="text-right">Cash</th><th class="text-right">Cheque</th>
                         <th class="text-right">Cr. Given</th><th class="text-right">Cr. Recv</th>
                         <th class="text-right">Balance</th><th>Remark</th><th class="text-center">Actions</th>
                     </tr></thead>
                     <tbody>
                         <template x-for="e in filteredSalesRecords.filter(r => (+r.Balance || 0) === 0)" :key="e.id">
-                            <tr><td class="whitespace-nowrap" x-text="fd(e.Date)"></td><td class="font-bold text-blue-700" x-text="'#'+e['Bill No']"></td><td x-text="e.Owner"></td><td x-text="e.Customer"></td><td x-text="e.Item"></td><td x-text="e.Mark"></td><td x-text="e.N"></td><td class="text-right num" x-text="fn(e.Pkgs)"></td><td class="text-right num" x-text="fn(e['P.Kilo'])"></td><td class="text-right num" x-text="fn(e['G.Kilo'])"></td><td class="text-right num" x-text="fn(e.Tare)"></td><td class="text-right num" x-text="fn(e['N.Kilo'])"></td><td class="text-right num" x-text="fn(e.Rate)"></td><td class="text-right num text-emerald-600 font-bold" x-text="fn(e['C.Amount'])"></td><td class="text-right num" x-text="fn(e['A.Amount'])"></td><td class="text-right num text-blue-600" x-text="fn(e.Cash)"></td><td class="text-right num text-blue-600" x-text="fn(e.Cheque)"></td><td class="text-right num" x-text="fn(e['Credit Given'])"></td><td class="text-right num" x-text="fn(e['Credit Received'])"></td><td class="text-right num font-bold" :class="(+e.Balance)>0?'text-rose-500':'text-slate-400'" x-text="fn(e.Balance)"></td><td x-text="e.Remark"></td><td class="text-center"><div class="flex justify-center gap-2"><button @click="editSaleEntry(e)" class="btn btn-ghost btn-sm text-blue-600">Edit</button><button @click="printInvoice(e)" class="btn btn-ghost btn-sm text-violet-600">PDF</button><button @click="deleteSaleEntry(e.id)" class="btn btn-ghost btn-sm text-rose-500">Del</button></div></td></tr>
-                            <tr><td class="whitespace-nowrap" x-text="fd(e.Date)"></td><td class="font-bold text-blue-700" x-text="'#'+e['Bill No']"></td><td x-text="e.Owner"></td><td x-text="e.Customer"></td><td x-text="e.Item"></td><td x-text="e.Mark"></td><td x-text="e.N"></td><td class="text-right num" x-text="fn(e.Pkgs)"></td><td class="text-right num" x-text="fn(e['P.Kilo'])"></td><td class="text-right num" x-text="fn(e['G.Kilo'])"></td><td class="text-right num" x-text="fn(e.Tare)"></td><td class="text-right num" x-text="fn(e['N.Kilo'])"></td><td class="text-right num" x-text="fn(e.Rate)"></td><td class="text-right num text-emerald-600 font-bold" x-text="fn(e['C.Amount'])"></td><td class="text-right num" x-text="fn(e['A.Amount'])"></td><td class="text-right num text-blue-600" x-text="fn(e.Cash)"></td><td class="text-right num text-blue-600" x-text="fn(e.Cheque)"></td><td class="text-right num" x-text="fn(e['Credit Given'])"></td><td class="text-right num" x-text="fn(e['Credit Received'])"></td><td class="text-right num font-bold" :class="(+e.Balance)>0?'text-rose-500':'text-slate-400'" x-text="fn(e.Balance)"></td><td x-text="e.Remark"></td><td class="text-center"><div class="flex justify-center gap-2"><button @click="editSaleEntry(e)" class="btn btn-ghost btn-sm text-blue-600" title="Edit sale entry">Edit</button><button @click="printInvoice(e)" class="btn btn-ghost btn-sm text-violet-600" title="Generate PDF invoice">PDF</button><button @click="deleteSaleEntry(e.id)" class="btn btn-ghost btn-sm text-rose-500" title="Delete sale entry">Del</button></div></td></tr>
+                            <tr><td class="whitespace-nowrap" x-text="fd(e.Date)"></td><td class="font-bold text-blue-700" x-text="'#'+e['Bill No']"></td><td x-text="e.Owner"></td><td x-text="e.Customer"></td><td x-text="e.Item"></td><td x-text="e.Mark"></td><td x-text="e.N"></td><td class="text-right num" x-text="fn(e.Pkgs)"></td><td class="text-right num" x-text="fn(e['P.Kilo'])"></td><td class="text-right num" x-text="fn(e['G.Kilo'])"></td><td class="text-right num" x-text="fn(e.Tare)"></td><td class="text-right num" x-text="fn(e['N.Kilo'])"></td><td class="text-right num" x-text="fn(e.Rate)"></td><td class="text-right num" x-text="fn(e.Kooli)"></td><td class="text-right num text-emerald-600 font-bold" x-text="fn(e['C.Amount'])"></td><td class="text-right num" x-text="fn(e['A.Amount'])"></td><td class="text-right num text-blue-600" x-text="fn(e.Cash)"></td><td class="text-right num text-blue-600" x-text="fn(e.Cheque)"></td><td class="text-right num" x-text="fn(e['Credit Given'])"></td><td class="text-right num" x-text="fn(e['Credit Received'])"></td><td class="text-right num font-bold" :class="(+e.Balance)>0?'text-rose-500':'text-slate-400'" x-text="fn(e.Balance)"></td><td x-text="e.Remark"></td><td class="text-center"><div class="flex justify-center gap-2"><button @click="editSaleEntry(e)" class="btn btn-ghost btn-sm text-blue-600" title="Edit sale entry">Edit</button><button @click="printInvoice(e)" class="btn btn-ghost btn-sm text-violet-600" title="Generate PDF invoice">PDF</button><button @click="deleteSaleEntry(e.id)" class="btn btn-ghost btn-sm text-rose-500" title="Delete sale entry">Del</button></div></td></tr>
                         </template>
                         <template x-if="filteredSalesRecords.filter(r => (+r.Balance || 0) === 0).length===0">
-                            <tr><td colspan="13" class="text-center py-12 text-slate-400 text-sm">No paid records found</td></tr>
+                            <tr><td colspan="23" class="text-center py-12 text-slate-400 text-sm">No paid records found</td></tr>
                         </template>
                     </tbody>
                 </table>
@@ -980,7 +976,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     <span x-text="purchaseForm.id ? 'Update Purchase' : 'Save Purchase'"></span>
                 </button>
-                <button x-show="purchaseForm.id" @click="resetPurchaseForm()" class="btn btn-outline" aria-label="Cancel purchase edit" title="Cancel purchase edit"></button>
                 <button x-show="purchaseForm.id" @click="resetPurchaseForm()" class="btn btn-outline" aria-label="Cancel purchase edit" title="Cancel purchase edit">Cancel</button>
             </div>
         </div>
@@ -1084,7 +1079,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     <span x-text="chequeForm.id ? 'Update Cheque' : 'Save Cheque'"></span>
                 </button>
-                <button x-show="chequeForm.id" @click="resetChequeForm()" class="btn btn-outline" aria-label="Cancel cheque edit" title="Cancel cheque edit"></button>
                 <button x-show="chequeForm.id" @click="resetChequeForm()" class="btn btn-outline" aria-label="Cancel cheque edit" title="Cancel cheque edit">Cancel</button>
             </div>
         </div>
@@ -1209,41 +1203,35 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     <span x-text="expenseForm.id?'Update Expense':'Save Expense'"></span>
                 </button>
-                <button x-show="expenseForm.id" @click="resetExpenseForm()" class="btn btn-outline" aria-label="Cancel expense edit" title="Cancel expense edit"></button>
                 <button x-show="expenseForm.id" @click="resetExpenseForm()" class="btn btn-outline" aria-label="Cancel expense edit" title="Cancel expense edit">Cancel</button>
             </div>
         </div>
         <!-- Expense stats -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="kpi kpi-rose anim-kpi">
-                <p class="text-[10px] font-black text-slate-400 uppercase">Total Expenses</p>
+            <div class="kpi kpi-rose anim-kpi"><p class="text-[10px] font-black text-slate-400 uppercase">Total Expenses</p>
                 <p class="text-lg font-black text-rose-600 num" x-text="fc(expenses.reduce((a,e)=>a+(+e.amount||0),0))"></p>
                 <p class="text-xs text-slate-400" x-text="expenses.length+' entries'"></p>
             </div>
-            <div class="kpi kpi-blue anim-kpi">
-                <p class="text-[10px] font-black text-slate-400 uppercase">Cash Expenses</p>
+            <div class="kpi kpi-blue anim-kpi"><p class="text-[10px] font-black text-slate-400 uppercase">Cash Expenses</p>
                 <p class="text-lg font-black text-blue-600 num" x-text="fc(expenses.filter(e=>e.mode==='cash').reduce((a,e)=>a+(+e.amount||0),0))"></p>
             </div>
-            <div class="kpi kpi-violet anim-kpi">
-                <p class="text-[10px] font-black text-slate-400 uppercase">Bank/Cheque</p>
+            <div class="kpi kpi-violet anim-kpi"><p class="text-[10px] font-black text-slate-400 uppercase">Bank/Cheque</p>
                 <p class="text-lg font-black text-violet-600 num" x-text="fc(expenses.filter(e=>e.mode==='cheque'||e.mode==='bank').reduce((a,e)=>a+(+e.amount||0),0))"></p>
             </div>
-            <div class="kpi kpi-amber anim-kpi">
-                <p class="text-[10px] font-black text-slate-400 uppercase">Net Cash Balance</p>
+            <div class="kpi kpi-amber anim-kpi"><p class="text-[10px] font-black text-slate-400 uppercase">Net Cash Balance</p>
                 <p class="text-lg font-black num" :class="(totals.cashIn-expenses.reduce((a,e)=>a+(+e.amount||0),0))>=0?'text-emerald-600':'text-rose-600'"
                    x-text="fc(totals.cashIn - expenses.reduce((a,e)=>a+(+e.amount||0),0))"></p>
             </div>
         </div>
         <!-- Expense Records - Role: region -->
         <div role="region" aria-labelledby="expense-records-heading" class="card">
-            <label for="searchExpensesInput" class="sr-only">Search Expenses</label>
-            <input type="text" id="searchExpensesInput" x-model="searchExpenses" placeholder="Search..." class="fi py-1 text-xs w-40" title="Search expenses">
             <div class="card-header">
                 <div class="flex items-center gap-2">
                     <h3 id="expense-records-heading" class="text-sm font-bold">Expense Records</h3>
                     <span class="badge badge-red" x-text="filteredExpenses.length+' records'"></span>
                 </div>
                 <div class="flex gap-2">
+                    <label for="searchExpensesInput" class="sr-only">Search Expenses</label>
                     <input type="text" x-model="searchExpenses" placeholder="Search..." class="fi py-1 text-xs w-40" title="Search expenses">
                 </div>
             </div>
@@ -1791,6 +1779,18 @@
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Add to Home Screen Prompt for iOS -->
+    <div x-show="showInstallPrompt" x-cloak class="fixed bottom-0 left-0 right-0 bg-slate-800/95 backdrop-blur-sm text-white p-4 text-center text-sm shadow-lg z-[1000] flex items-center justify-center gap-4 anim-up no-print">
+        <div class="flex-1">
+            Install this web app on your device: tap
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 inline-block align-text-bottom mx-1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15m0-3l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            and then "Add to Home Screen".
+        </div>
+        <button @click="dismissInstallPrompt()" class="text-slate-400 hover:text-white font-bold text-2xl leading-none flex-shrink-0" aria-label="Dismiss install prompt">&times;</button>
+    </div>
+
 </body>
 </html>

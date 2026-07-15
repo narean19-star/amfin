@@ -7,6 +7,7 @@ function accountingApp() {
         progress: 0,
         sidebarOpen: false,
         toasts: [],
+        showInstallPrompt: false,
 
         // Global filters
         filterFrom: '',
@@ -147,6 +148,9 @@ function accountingApp() {
             this.$watch('view', v => { if (v === 'dashboard' || v === 'analysis') setTimeout(() => this.updateCharts(), 80); });
             setTimeout(() => this.updateCharts(), 500);
             setTimeout(() => { this.isLoading = false; }, 300);
+
+            // Check if we should show the iOS install prompt.
+            this.checkForInstallPrompt();
 
             // Add a listener to ensure data is saved to local storage before the user leaves.
             window.addEventListener('beforeunload', () => {
@@ -327,6 +331,24 @@ User Question: "${this.aiPrompt}"`;
             } else {
                 this.toast('Cancelled', 'Clear data operation was cancelled.', 'info');
             }
-        }
+        },
+
+        // ─── PWA Install Prompt for iOS ─────────────────────────────
+        checkForInstallPrompt() {
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            // The 'standalone' property is a non-standard API supported by Mobile Safari.
+            const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
+            const hasDismissed = localStorage.getItem('amfin_install_prompt_dismissed') === 'true';
+
+            if (isIOS && !isInStandaloneMode && !hasDismissed) {
+                this.showInstallPrompt = true;
+            }
+        },
+
+        dismissInstallPrompt() {
+            this.showInstallPrompt = false;
+            localStorage.setItem('amfin_install_prompt_dismissed', 'true');
+            this.toast('Prompt Dismissed', 'You can still add this app via the share menu.', 'info');
+        },
     };
 }
