@@ -148,7 +148,7 @@
     <div class="p-3 border-t border-slate-800 space-y-1.5 no-print">
         <button @click.prevent="$refs.xlsxImport.click()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Import Excel</button>
         <button @click.prevent="exportExcel()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export Excel</button>
-        <input type="file" x-ref="xlsxImport" class="visually-hidden-input" @change="importExcel($event)" accept=".xlsx,.xls">
+        <input type="file" x-ref="xlsxImport" class="visually-hidden-input" @change="importExcel($event)" accept=".xlsx,.xls" title="Select Excel file for import">
     </div>
 </aside>
 
@@ -287,7 +287,7 @@
             <div role="region" aria-labelledby="ownerSummaryHeading" class="card" x-data="{ reportMode: 'summary', dropdownOpen: false }" @click.away="dropdownOpen = false">
                 <div class="card-header">
                     <div class="flex items-center gap-2">
-                        <h3 class="text-sm font-bold text-slate-800" id="ownerSummaryHeading">By Owner</h3>
+                        <h3 class="text-sm font-bold text-slate-800" id="ownerSummaryHeading">By Owner</h3> 
                         <label for="searchOwnerInput" class="sr-only">Search Owner</label>
                         <span class="badge badge-slate" x-text="summariesByOwner.length"></span>
                     </div>
@@ -299,7 +299,7 @@
                 </div>
                 <div class="p-3 border-b border-slate-100 flex items-center justify-between" aria-labelledby="ownerSummaryHeading">
                     <div class="w-full relative">
-                        <input type="text" id="searchOwnerInput" x-model="searchOwner" @focus="dropdownOpen = true" @click="dropdownOpen = !dropdownOpen" placeholder="Click to select or search owners..." class="fi w-full" aria-controls="owner-dropdown-list" :aria-expanded="dropdownOpen">
+                        <input type="text" id="searchOwnerInput" x-model="searchOwner" @focus="dropdownOpen = true" @click="dropdownOpen = !dropdownOpen" placeholder="Click to select or search owners..." class="fi w-full" aria-controls="owner-dropdown-list" :aria-expanded="dropdownOpen" title="Search or select owner">
                         <div
                          id="owner-dropdown-list" x-show="dropdownOpen" x-transition role="listbox" class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
                             <template x-for="o in (searchOwner ? owners.filter(own => own.toLowerCase().includes(searchOwner.toLowerCase())) : owners).slice().sort().slice(0,100)" :key="o">
@@ -408,7 +408,7 @@
                 </div>
                 <div class="p-3 border-b border-slate-100 flex items-center justify-between" aria-labelledby="customerSummaryHeading">
                     <div class="w-full relative">
-                        <input type="text" id="searchCustomerInput" x-model="searchCustomer" @focus="dropdownOpen = true" @click="dropdownOpen = !dropdownOpen" placeholder="Click to select or search customers..." class="fi w-full" aria-controls="customer-dropdown-list" :aria-expanded="dropdownOpen">
+                        <input type="text" id="searchCustomerInput" x-model="searchCustomer" @focus="dropdownOpen = true" @click="dropdownOpen = !dropdownOpen" placeholder="Click to select or search customers..." class="fi w-full" aria-controls="customer-dropdown-list" :aria-expanded="dropdownOpen" title="Search or select customer">
                         <div id="customer-dropdown-list" x-show="dropdownOpen" x-transition role="listbox" class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
                             <template x-for="c in (searchCustomer ? customers.filter(cust => cust.toLowerCase().includes(searchCustomer.toLowerCase())) : customers).slice().sort().slice(0,100)" :key="c">
                                 <div role="option" @click="searchCustomer = c; dropdownOpen = false" class="p-2 hover:bg-slate-100 cursor-pointer text-sm" x-text="c"></div>
@@ -516,7 +516,7 @@
                 </div>
                 <div class="p-3 border-b border-slate-100 flex items-center justify-between" aria-labelledby="outstandingSummaryHeading">
                     <div class="w-full relative">
-                        <input type="text" id="searchOutstandingInput" x-model="searchOutstanding" @focus="dropdownOpen = true" @click="dropdownOpen = !dropdownOpen" placeholder="Click to select or search debtors..." class="fi w-full" aria-controls="outstanding-dropdown-list" :aria-expanded="dropdownOpen">
+                        <input type="text" id="searchOutstandingInput" x-model="searchOutstanding" @focus="dropdownOpen = true" @click="dropdownOpen = !dropdownOpen" placeholder="Click to select or search debtors..." class="fi w-full" aria-controls="outstanding-dropdown-list" :aria-expanded="dropdownOpen" title="Search outstanding accounts">
                         <div id="outstanding-dropdown-list" x-show="dropdownOpen" x-transition role="listbox" class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
                             <template x-for="d in (searchOutstanding ? summariesByOutstanding.filter(s => s.owner.toLowerCase().includes(searchOutstanding.toLowerCase())) : summariesByOutstanding).slice(0,100)" :key="d.owner">
                                 <div role="option" @click="searchOutstanding = d.owner; dropdownOpen = false" class="p-2 hover:bg-slate-100 cursor-pointer text-sm" x-text="d.owner"></div>
@@ -796,6 +796,7 @@
                     <tbody>
                         <template x-for="e in filteredSalesRecords.filter(r => (+r.Balance || 0) === 0)" :key="e.id">
                             <tr><td class="whitespace-nowrap" x-text="fd(e.Date)"></td><td class="font-bold text-blue-700" x-text="'#'+e['Bill No']"></td><td x-text="e.Owner"></td><td x-text="e.Customer"></td><td x-text="e.Item"></td><td x-text="e.Mark"></td><td x-text="e.N"></td><td class="text-right num" x-text="fn(e.Pkgs)"></td><td class="text-right num" x-text="fn(e['P.Kilo'])"></td><td class="text-right num" x-text="fn(e['G.Kilo'])"></td><td class="text-right num" x-text="fn(e.Tare)"></td><td class="text-right num" x-text="fn(e['N.Kilo'])"></td><td class="text-right num" x-text="fn(e.Rate)"></td><td class="text-right num text-emerald-600 font-bold" x-text="fn(e['C.Amount'])"></td><td class="text-right num" x-text="fn(e['A.Amount'])"></td><td class="text-right num text-blue-600" x-text="fn(e.Cash)"></td><td class="text-right num text-blue-600" x-text="fn(e.Cheque)"></td><td class="text-right num" x-text="fn(e['Credit Given'])"></td><td class="text-right num" x-text="fn(e['Credit Received'])"></td><td class="text-right num font-bold" :class="(+e.Balance)>0?'text-rose-500':'text-slate-400'" x-text="fn(e.Balance)"></td><td x-text="e.Remark"></td><td class="text-center"><div class="flex justify-center gap-2"><button @click="editSaleEntry(e)" class="btn btn-ghost btn-sm text-blue-600">Edit</button><button @click="printInvoice(e)" class="btn btn-ghost btn-sm text-violet-600">PDF</button><button @click="deleteSaleEntry(e.id)" class="btn btn-ghost btn-sm text-rose-500">Del</button></div></td></tr>
+                            <tr><td class="whitespace-nowrap" x-text="fd(e.Date)"></td><td class="font-bold text-blue-700" x-text="'#'+e['Bill No']"></td><td x-text="e.Owner"></td><td x-text="e.Customer"></td><td x-text="e.Item"></td><td x-text="e.Mark"></td><td x-text="e.N"></td><td class="text-right num" x-text="fn(e.Pkgs)"></td><td class="text-right num" x-text="fn(e['P.Kilo'])"></td><td class="text-right num" x-text="fn(e['G.Kilo'])"></td><td class="text-right num" x-text="fn(e.Tare)"></td><td class="text-right num" x-text="fn(e['N.Kilo'])"></td><td class="text-right num" x-text="fn(e.Rate)"></td><td class="text-right num text-emerald-600 font-bold" x-text="fn(e['C.Amount'])"></td><td class="text-right num" x-text="fn(e['A.Amount'])"></td><td class="text-right num text-blue-600" x-text="fn(e.Cash)"></td><td class="text-right num text-blue-600" x-text="fn(e.Cheque)"></td><td class="text-right num" x-text="fn(e['Credit Given'])"></td><td class="text-right num" x-text="fn(e['Credit Received'])"></td><td class="text-right num font-bold" :class="(+e.Balance)>0?'text-rose-500':'text-slate-400'" x-text="fn(e.Balance)"></td><td x-text="e.Remark"></td><td class="text-center"><div class="flex justify-center gap-2"><button @click="editSaleEntry(e)" class="btn btn-ghost btn-sm text-blue-600" title="Edit sale entry">Edit</button><button @click="printInvoice(e)" class="btn btn-ghost btn-sm text-violet-600" title="Generate PDF invoice">PDF</button><button @click="deleteSaleEntry(e.id)" class="btn btn-ghost btn-sm text-rose-500" title="Delete sale entry">Del</button></div></td></tr>
                         </template>
                         <template x-if="filteredSalesRecords.filter(r => (+r.Balance || 0) === 0).length===0">
                             <tr><td colspan="13" class="text-center py-12 text-slate-400 text-sm">No paid records found</td></tr>
@@ -980,6 +981,7 @@
                     <span x-text="purchaseForm.id ? 'Update Purchase' : 'Save Purchase'"></span>
                 </button>
                 <button x-show="purchaseForm.id" @click="resetPurchaseForm()" class="btn btn-outline" aria-label="Cancel purchase edit" title="Cancel purchase edit"></button>
+                <button x-show="purchaseForm.id" @click="resetPurchaseForm()" class="btn btn-outline" aria-label="Cancel purchase edit" title="Cancel purchase edit">Cancel</button>
             </div>
         </div>
         <!-- Purchase Records - Role: region -->
@@ -1083,6 +1085,7 @@
                     <span x-text="chequeForm.id ? 'Update Cheque' : 'Save Cheque'"></span>
                 </button>
                 <button x-show="chequeForm.id" @click="resetChequeForm()" class="btn btn-outline" aria-label="Cancel cheque edit" title="Cancel cheque edit"></button>
+                <button x-show="chequeForm.id" @click="resetChequeForm()" class="btn btn-outline" aria-label="Cancel cheque edit" title="Cancel cheque edit">Cancel</button>
             </div>
         </div>
         <!-- Cheque Stats -->
@@ -1207,6 +1210,7 @@
                     <span x-text="expenseForm.id?'Update Expense':'Save Expense'"></span>
                 </button>
                 <button x-show="expenseForm.id" @click="resetExpenseForm()" class="btn btn-outline" aria-label="Cancel expense edit" title="Cancel expense edit"></button>
+                <button x-show="expenseForm.id" @click="resetExpenseForm()" class="btn btn-outline" aria-label="Cancel expense edit" title="Cancel expense edit">Cancel</button>
             </div>
         </div>
         <!-- Expense stats -->
