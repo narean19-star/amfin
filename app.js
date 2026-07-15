@@ -312,6 +312,111 @@ User Question: "${this.aiPrompt}"`;
             this.toast('Backup Complete', 'A local JSON backup has been downloaded.', 'success');
         },
 
+        importExcel(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                this.toast('No file selected', 'Please select an Excel file to import.', 'warning');
+                return;
+            }
+
+            this.isLoading = true;
+            this.loadingMsg = 'Importing Excel data...';
+            this.progress = 0;
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                    this.progress = 10;
+
+                    const processSheet = (sheetName, dataArrayName, normalizer) => {
+                        const sheet = workbook.Sheets[sheetName];
+                        if (!sheet) return;
+
+                        let jsonData = XLSX.utils.sheet_to_json(sheet);
+                        
+                        jsonData = jsonData.map(row => {
+                            const newRow = { ...row };
+                            // Convert Excel date to YYYY-MM-DD string for all relevant date fields
+                            ['Date', 'date', 'clearDate'].forEach(dateField => {
+                                if (newRow[dateField] && newRow[dateField] instanceof Date) {
+                                    const d = newRow[dateField];
+                                    const y = d.getFullYear();
+                                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                                    const day = String(d.getDate()).padStart(2, '0');
+                                    newRow[dateField] = `${y}-${m}-${d}`;
+                                }
+                            });
+
+                            return normalizer ? normalizer(newRow) : newRow;
+                        });
+
+                        const existingIds = new Set(this[dataArrayName].map(item => item.id));
+                        const newData = jsonData.filter(item => !item.id || !existingIds.has(item.id));
+
+                        if (newData.length > 0) {
+                            this[dataArrayName] = [...this[dataArrayName], ...newData];
+                            this.toast(`Imported ${sheetName}`, `${newData.length} new records added.`, 'info');
+                        }
+                    };
+
+                    processSheet('Sales', 'entries', this.normalizeSaleEntry.bind(this));
+                    this.progress = 40;
+                    processSheet('Purchases', 'purchases');
+                    this.progress = 60;
+                    processSheet('Expenses', 'expenses');
+                    this.progress = 80;
+                    processSheet('Cheques', 'cheques');
+                    this.progress = 90;
+
+                    this.toast('Import Complete', 'Excel data has been processed.', 'success');
+                    this.updateMastersFromData();
+                    this.persist();
+
+                } catch (error) {
+                    console.error("Error importing Excel file:", error);
+                    this.toast('Import Error', `Failed to process the Excel file. ${error.message}`, 'error');
+                } finally {
+                    this.progress = 100;
+                    setTimeout(() => { this.isLoading = false; this.loadingMsg = ''; }, 500);
+                    event.target.value = ''; // Reset file input
+                }
+            };
+
+            reader.onerror = (error) => {
+                console.error("FileReader error:", error);
+                this.toast('File Read Error', 'Could not read the selected file.', 'error');
+                this.isLoading = false;
+                this.loadingMsg = '';
+                event.target.value = '';
+            };
+
+            reader.readAsArrayBuffer(file);
+        },
+
+        updateMastersFromData() {
+            const newOwners = new Set(this.owners);
+            this.entries.forEach(e => e.Owner && newOwners.add(e.Owner));
+            this.owners = Array.from(newOwners).sort();
+
+            const newCustomers = new Set(this.customers);
+            this.entries.forEach(e => e.Customer && newCustomers.add(e.Customer));
+            this.customers = Array.from(newCustomers).sort();
+
+            const newItems = new Set(this.items);
+            this.entries.forEach(e => e.Item && newItems.add(e.Item));
+            this.purchases.forEach(p => p.item && newItems.add(p.item));
+            this.items = Array.from(newItems).sort();
+
+            const newSuppliers = new Set(this.suppliers);
+            this.purchases.forEach(p => p.supplier && newSuppliers.add(p.supplier));
+            this.suppliers = Array.from(newSuppliers).sort();
+            
+            this.toast('Master Data Updated', 'Dropdown lists have been updated from imported data.', 'info');
+        },
+
         async clearAllData() {
             const confirmation = prompt('This will delete ALL data from the cloud database. This cannot be undone.\n\nTo confirm, please type "DELETE" below:');
             if (confirmation === 'DELETE') {
