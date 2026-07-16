@@ -8,6 +8,10 @@ function accountingApp() {
         sidebarOpen: false,
         toasts: [],
         showInstallPrompt: false,
+        // Notification Center State
+        notifications: [],
+        showNotificationCenter: false,
+        unreadNotificationCount: 0,
 
         // Global filters
         filterFrom: '',
@@ -87,14 +91,37 @@ function accountingApp() {
         fc(v) { return new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(v || 0); },
         fn(v) { if (v === undefined || v === null || v === '' || isNaN(v)) return '0'; return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(v); },
         fd(d) { if (!d) return ''; const p = String(d).split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d; },
-
-        // ─── Toasts ─────────────────────────────────────────────────
+        
+        // ─── Toasts & Notifications ─────────────────────────────────
         toast(title, msg, type = 'info') {
             const id = Date.now() + Math.random();
-            this.toasts.push({ id, title, msg, type });
+            const newToast = { id, title, msg, type, time: new Date() };
+            
+            // For on-screen toasts
+            this.toasts.push(newToast);
             setTimeout(() => this.removeToast(id), 4000);
+
+            // For notification center history
+            this.notifications.unshift(newToast);
+            if (this.notifications.length > 50) { // Keep only last 50
+                this.notifications.pop();
+            }
+            this.unreadNotificationCount++;
         },
         removeToast(id) { this.toasts = this.toasts.filter(t => t.id !== id); },
+
+        toggleNotificationCenter() {
+            this.showNotificationCenter = !this.showNotificationCenter;
+            if (this.showNotificationCenter) {
+                this.unreadNotificationCount = 0;
+            }
+        },
+
+        clearNotifications() {
+            this.notifications = [];
+            this.unreadNotificationCount = 0;
+            this.showNotificationCenter = false;
+        },
 
         // ─── Init & Persist ─────────────────────────────────────────
         async init() {
@@ -310,6 +337,59 @@ User Question: "${this.aiPrompt}"`;
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             this.toast('Backup Complete', 'A local JSON backup has been downloaded.', 'success');
+        },
+
+        importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                this.toast('No file selected', 'Please select a JSON backup file to import.', 'warning');
+                return;
+            }
+
+            this.isLoading = true;
+            this.loadingMsg = 'Importing JSON backup...';
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    // Basic validation to see if it looks like our data
+                    if (!data.entries && !data.owners) {
+                        throw new Error('JSON file does not appear to be a valid backup.');
+                    }
+
+                    const confirmation = prompt('This will overwrite ALL local and cloud data with the backup. This cannot be undone. Are you sure? Type "IMPORT" to confirm.');
+                    if (confirmation !== 'IMPORT') {
+                        this.toast('Import Cancelled', 'The import operation was cancelled.', 'info');
+                        this.isLoading = false;
+                        this.loadingMsg = '';
+                        event.target.value = '';
+                        return;
+                    }
+
+                    this.applyCloudData(data);
+                    this.toast('Import Complete', 'Data has been restored from the JSON backup. Saving to cloud...', 'success');
+                    this.forceSave(); // Immediately save the restored data to Supabase
+                } catch (error) {
+                    console.error("Error importing JSON file:", error);
+                    this.toast('Import Error', `Failed to process the JSON file. ${error.message}`, 'error');
+                    this.isLoading = false;
+                } finally {
+                    event.target.value = ''; // Reset file input
+                }
+            };
+
+            reader.onerror = (error) => {
+                console.error("FileReader error:", error);
+                this.toast('File Read Error', 'Could not read the selected file.', 'error');
+                this.isLoading = false;
+                this.loadingMsg = '';
+                event.target.value = '';
+            };
+
+            reader.readAsText(file);
         },
 
         importExcel(event) {

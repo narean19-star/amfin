@@ -1,12 +1,14 @@
-const CACHE_NAME = 'am-sales-cache-v1';
+const CACHE_NAME = 'am-sales-cache-v2';
 const urlsToCache = [
   '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/app.js',
-  '/supabase-client.js',
-  '/groq-client.js',
-  '/apple-touch-icon.png',
+  'index.html',
+  'css/style.css',
+  'app.js',
+  'supabase-client.js',
+  'groq-client.js',
+  'apple-touch-icon.png',
+  'manifest.json',
+  // External CDN resources
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/alpinejs',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
@@ -18,9 +20,30 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+      .then(() => self.skipWaiting()) // Activate worker immediately
+  );
+});
+
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      )
+    ).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+  );
 });
