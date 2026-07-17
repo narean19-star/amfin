@@ -1,8 +1,11 @@
 {
-  "name": "amfin-migration",
+  "name": "amfin",
   "version": "1.0.0",
-  "main": "migrate.js",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.0.0"
-  }
+  "description": "A progressive web app for accounting.",
+  "scripts": {
+    "build": "node ./build-secrets.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
 }

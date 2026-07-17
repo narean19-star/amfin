@@ -12,6 +12,13 @@ function accountingApp() {
         notifications: [],
         showNotificationCenter: false,
         unreadNotificationCount: 0,
+        // Modal State
+        modal: {
+            show: false,
+            title: '',
+            message: '',
+            onConfirm: null,
+        },
 
         // Global filters
         filterFrom: '',
@@ -162,6 +169,7 @@ function accountingApp() {
                         if (raw) {
                             const d = JSON.parse(raw);
                             this.applyCloudData(d);
+                            localStorage.removeItem('am_accounts_v9'); // Clean up old data after migration
                             this.toast('Migration', 'Data migrated to new version. Please verify.', 'info');
                             this.persist(); // Save the migrated data
                         }
@@ -242,6 +250,11 @@ function accountingApp() {
             } finally {
                 this.isLoading = false;
             }
+        },
+
+        async syncToCloud() {
+            this.toast('Syncing...', 'Attempting to force-save all data to the cloud.', 'info');
+            await this.forceSave();
         },
 
         // ─── AI Assistant ───────────────────────────────────────────
@@ -360,8 +373,15 @@ User Question: "${this.aiPrompt}"`;
                         throw new Error('JSON file does not appear to be a valid backup.');
                     }
 
-                    const confirmation = prompt('This will overwrite ALL local and cloud data with the backup. This cannot be undone. Are you sure? Type "IMPORT" to confirm.');
-                    if (confirmation !== 'IMPORT') {
+                    this.showModal(
+                        'Confirm Import',
+                        'This will overwrite ALL local and cloud data with the backup. This cannot be undone. Are you sure?',
+                        () => {
+                            this.applyCloudData(data);
+                            this.toast('Import Complete', 'Data has been restored from the JSON backup. Saving to cloud...', 'success');
+                            this.forceSave(); // Immediately save the restored data to Supabase
+                        },
+                        () => {
                         this.toast('Import Cancelled', 'The import operation was cancelled.', 'info');
                         this.isLoading = false;
                         this.loadingMsg = '';
@@ -369,9 +389,6 @@ User Question: "${this.aiPrompt}"`;
                         return;
                     }
 
-                    this.applyCloudData(data);
-                    this.toast('Import Complete', 'Data has been restored from the JSON backup. Saving to cloud...', 'success');
-                    this.forceSave(); // Immediately save the restored data to Supabase
                 } catch (error) {
                     console.error("Error importing JSON file:", error);
                     this.toast('Import Error', `Failed to process the JSON file. ${error.message}`, 'error');
@@ -433,13 +450,9 @@ User Question: "${this.aiPrompt}"`;
                             return normalizer ? normalizer(newRow) : newRow;
                         });
 
-                        const existingIds = new Set(this[dataArrayName].map(item => item.id));
-                        const newData = jsonData.filter(item => !item.id || !existingIds.has(item.id));
-
-                        if (newData.length > 0) {
-                            this[dataArrayName] = [...this[dataArrayName], ...newData];
-                            this.toast(`Imported ${sheetName}`, `${newData.length} new records added.`, 'info');
-                        }
+                        // Replace the data for the given sheet completely.
+                        this[dataArrayName] = jsonData;
+                        this.toast(`Data Replaced`, `Loaded ${jsonData.length} records from "${sheetName}", replacing previous data.`, 'success');
                     };
 
                     processSheet('Sales', 'entries', this.normalizeSaleEntry.bind(this));
@@ -497,26 +510,176 @@ User Question: "${this.aiPrompt}"`;
             this.toast('Master Data Updated', 'Dropdown lists have been updated from imported data.', 'info');
         },
 
-        async clearAllData() {
-            const confirmation = prompt('This will delete ALL data from the cloud database. This cannot be undone.\n\nTo confirm, please type "DELETE" below:');
-            if (confirmation === 'DELETE') {
-                this.isLoading = true;
-                this.loadingMsg = 'Deleting all cloud data...';
-                try {
-                    await clearAllSupabaseData();
-                    this.toast('Success', 'All cloud data has been deleted. The app will now reload.', 'success');
-                    // Clear local storage to prevent reloading old data
-                    localStorage.removeItem('am_accounts_v10');
-                    localStorage.removeItem('am_accounts_v9');
-                    setTimeout(() => location.reload(), 2000);
-                } catch (error) {
-                    this.toast('Error', 'Could not clear cloud data. ' + error.message, 'error');
-                    this.isLoading = false;
-                }
-            } else {
-                this.toast('Cancelled', 'Clear data operation was cancelled.', 'info');
+        exportExcel() {
+            this.isLoading = true;
+            this.loadingMsg = 'Generating Excel file...';
+            try {
+                const wb = XLSX.utils.book_new();
+
+                // Add data sheets
+                if (this.entries.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.entries), 'Sales');
+                if (this.purchases.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.purchases), 'Purchases');
+                if (this.expenses.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.expenses), 'Expenses');
+                if (this.cheques.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.cheques), 'Cheques');
+                
+                // Add master data sheets
+                if (this.owners.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.owners.map(o => ({ Owner: o }))), 'Owners');
+                if (this.customers.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.customers.map(c => ({ Customer: c }))), 'Customers');
+                if (this.items.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.items.map(i => ({ Item: i }))), 'Items');
+                if (this.suppliers.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.suppliers.map(s => ({ Supplier: s }))), 'Suppliers');
+
+                XLSX.writeFile(wb, `amfin_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+                this.toast('Export Complete', 'Excel file has been downloaded.', 'success');
+            } catch (error) {
+                console.error("Error exporting to Excel:", error);
+                this.toast('Export Error', `Could not generate Excel file. ${error.message}`, 'error');
+            } finally {
+                this.isLoading = false;
             }
         },
+
+        async clearAllData() {
+            this.showModal(
+                'Confirm Delete All Data',
+                'This will permanently delete ALL data from the local device and the cloud database. This action cannot be undone.',
+                async () => {
+                    this.isLoading = true;
+                    this.loadingMsg = 'Deleting all cloud data...';
+                    try {
+                        await clearAllSupabaseData();
+                        this.toast('Success', 'All cloud data has been deleted. The app will now reload.', 'success');
+                        localStorage.removeItem('am_accounts_v10');
+                        localStorage.removeItem('am_accounts_v9');
+                        setTimeout(() => location.reload(), 2000);
+                    } catch (error) {
+                        this.toast('Error', 'Could not clear cloud data. ' + error.message, 'error');
+                        this.isLoading = false;
+                    }
+                },
+                () => {
+                    this.toast('Cancelled', 'Clear data operation was cancelled.', 'info');
+                }
+            );
+        },
+
+        showModal(title, message, onConfirm, onCancel = null) {
+            this.modal.title = title;
+            this.modal.message = message;
+            this.modal.onConfirm = onConfirm;
+            this.modal.onCancel = onCancel;
+            this.modal.show = true;
+        },
+
+        closeModal() {
+            if (this.modal.onCancel) this.modal.onCancel();
+            this.modal.show = false;
+        },
+
+        findBill() {
+            if (!this.billSearch.trim()) {
+                this.foundBill = null;
+                return;
+            }
+            const billNo = this.billSearch.trim();
+            this.foundBill = this.entries.find(e => String(e['Bill No']) === billNo) || null;
+        },
+
+        loadBillIntoForm(bill) {
+            this.saleForm = JSON.parse(JSON.stringify(bill)); // Deep copy to avoid modifying original
+            this.setView('entry');
+            this.toast('Entry Loaded', `Bill #${bill['Bill No']} loaded into the form for editing.`, 'info');
+            this.foundBill = null;
+            this.billSearch = '';
+        },
+
+        // --- PRINTING ---
+        printDetailedReport(type, filter = '', onlyOutstanding = false) {
+            let records, title, totals;
+            const dateRange = this.filterFrom && this.filterTo ? `from ${this.fd(this.filterFrom)} to ${this.fd(this.filterTo)}` : 'for all dates';
+
+            switch (type) {
+                case 'Owner':
+                    records = this.ownerFilteredRecords;
+                    totals = this.ownerFilteredRecordsTotals;
+                    title = `Detailed Report for Owner: ${filter || 'All'} ${dateRange}`;
+                    break;
+                case 'Customer':
+                    records = this.customerFilteredRecords;
+                    totals = this.customerFilteredRecordsTotals;
+                    title = `Detailed Report for Customer: ${filter || 'All'} ${dateRange}`;
+                    break;
+                case 'all':
+                    records = this.filteredSalesRecords;
+                    totals = this.filteredSalesRecords.reduce((acc, e) => {
+                        acc.nKilo += +e['N.Kilo'] || 0;
+                        acc.cAmount += +e['C.Amount'] || 0;
+                        acc.aAmount += +e['A.Amount'] || 0;
+                        acc.cash += +e.Cash || 0;
+                        acc.cheque += +e.Cheque || 0;
+                        acc.balance += +e.Balance || 0;
+                        return acc;
+                    }, { nKilo: 0, cAmount: 0, aAmount: 0, cash: 0, cheque: 0, balance: 0 });
+                    title = `Full Sales Ledger ${dateRange}`;
+                    break;
+                default:
+                    this.toast('Not Implemented', `Printing for type "${type}" is not yet available.`, 'warning');
+                    return;
+            }
+
+            if (onlyOutstanding) {
+                records = records.filter(e => e.Balance > 0);
+                title = `Outstanding Report for ${filter || 'All'} ${dateRange}`;
+            }
+
+            if (!records || records.length === 0) {
+                this.toast('No Data', 'There is no data to print for the selected criteria.', 'info');
+                return;
+            }
+
+            const printContent = `
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <h1 style="font-size: 1.5rem; font-weight: bold;">AM Sales</h1>
+                    <h2 style="font-size: 1.1rem; color: #333;">${title}</h2>
+                    <p style="font-size: 0.9rem; color: #555;">Generated on: ${new Date().toLocaleString()}</p>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+                    <thead><tr style="background-color: #f2f2f2;">
+                        ${['Date', 'Bill#', 'Owner', 'Customer', 'Item', 'N.KG', 'Rate', 'C.Amt', 'A.Amt', 'Cash', 'Cheque', 'Balance'].map(h => `<th style="padding: 4px; border: 1px solid #ddd; text-align: ${['N.KG','Rate','C.Amt','A.Amt','Cash','Cheque','Balance'].includes(h) ? 'right' : 'left'};">${h}</th>`).join('')}
+                    </tr></thead>
+                    <tbody>
+                        ${records.map(e => `<tr>
+                            ${[this.fd(e.Date), e['Bill No'], e.Owner, e.Customer, e.Item, this.fn(e['N.Kilo']), this.fn(e.Rate), this.fn(e['C.Amount']), this.fn(e['A.Amount']), this.fn(e.Cash), this.fn(e.Cheque), this.fn(e.Balance)].map((val, i) => `<td style="padding: 4px; border: 1px solid #ddd; text-align: ${i > 4 ? 'right' : 'left'};">${val}</td>`).join('')}
+                        </tr>`).join('')}
+                    </tbody>
+                    <tfoot><tr style="font-weight: bold; background-color: #f2f2f2;">
+                        <td colspan="5" style="padding: 4px; border: 1px solid #ddd; text-align: right;">TOTALS</td>
+                        <td style="padding: 4px; border: 1px solid #ddd; text-align: right;">${this.fn(totals.nKilo)}</td><td></td>
+                        <td style="padding: 4px; border: 1px solid #ddd; text-align: right;">${this.fc(totals.cAmount)}</td><td style="padding: 4px; border: 1px solid #ddd; text-align: right;">${this.fc(totals.aAmount)}</td>
+                        <td style="padding: 4px; border: 1px solid #ddd; text-align: right;">${this.fc(totals.cash)}</td><td style="padding: 4px; border: 1px solid #ddd; text-align: right;">${this.fc(totals.cheque)}</td>
+                        <td style="padding: 4px; border: 1px solid #ddd; text-align: right;">${this.fc(totals.balance)}</td>
+                    </tr></tfoot>
+                </table>`;
+            
+            this.triggerPrint(title, printContent);
+        },
+
+        triggerPrint(title, content) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<html><head><title>${title}</title><style>body { font-family: sans-serif; } table { width: 100%; border-collapse: collapse; } @media print { @page { size: A4 landscape; margin: 0.5in; } body { -webkit-print-color-adjust: exact; } }</style></head><body>${content}</body></html>`);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+        },
+
+        // Stubs for other print functions
+        printCompactReport(type, filter, onlyOutstanding = false) { this.toast('Not Implemented', 'Compact reports are not yet available for printing.', 'warning'); },
+        printSummaryTable(type, summaries, grandTotal) { this.toast('Not Implemented', 'Summary reports are not yet available for printing.', 'warning'); },
+        printPLReport() { this.toast('Not Implemented', 'P&L reports are not yet available for printing.', 'warning'); },
+        printOutstandingReport(filter) { this.printDetailedReport('Owner', filter, true); },
+        printPurchasesReport() { this.toast('Not Implemented', 'Purchases reports are not yet available for printing.', 'warning'); },
+        printChequesReport() { this.toast('Not Implemented', 'Cheque reports are not yet available for printing.', 'warning'); },
+        printExpensesReport() { this.toast('Not Implemented', 'Expense reports are not yet available for printing.', 'warning'); },
+        printInvoice(entry) { this.toast('Not Implemented', 'Invoice PDF generation is not yet available.', 'warning'); },
 
         // ─── PWA Install Prompt for iOS ─────────────────────────────
         checkForInstallPrompt() {

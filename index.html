@@ -280,10 +280,10 @@
     </nav>
     <div class="p-3 border-t border-slate-800 space-y-1.5">
         <label for="xlsxImportInput" class="nav-item cursor-pointer"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Import Excel</label>
-        <button @click.prevent="exportExcel()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export Excel</button>
+        <button @click="exportExcel()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export Excel</button>
         <button @click.prevent="backupJSON()" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Backup JSON</button>
-        <input type="file" id="xlsxImportInput" style="position:absolute;left:-9999px;top:-9999px;" @change="importExcel($event)" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
-        <input type="file" x-ref="jsonRestore" style="position:absolute;left:-9999px;top:-9999px;" @change="restoreJSON($event)" accept=".json">
+        <input type="file" id="xlsxImportInput" x-ref="xlsxImport" style="position:absolute;left:-9999px;top:-9999px;" @change="importExcel($event)" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+        <input type="file" x-ref="jsonRestore" style="position:absolute;left:-9999px;top:-9999px;" @change="importJSON($event)" accept=".json">
     </div>
 </aside>
 
@@ -787,8 +787,8 @@
         <div class="card p-4">
             <p class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Data Management</p>
             <div class="flex flex-wrap gap-2">
-                <button @click="backupJSON()" class="btn btn-outline btn-sm">Backup JSON</button>
-                <button @click="$refs.jsonRestore.click()" class="btn btn-outline btn-sm">Restore JSON</button>
+                <button @click="backupJSON()" class="btn btn-outline btn-sm">Local Backup (JSON)</button>
+                <button @click="$refs.jsonRestore.click()" class="btn btn-outline btn-sm">Restore from JSON</button>
                 <button @click="clearAllData()" class="btn btn-danger btn-sm">Clear All Data</button>
             </div>
         </div>
@@ -1855,14 +1855,21 @@
         <div class="card p-4">
             <h3 class="text-sm font-bold mb-3 border-b pb-2">Data Management</h3>
             <div class="flex flex-wrap gap-3">
-                <button @click="$refs.xlsxImport.click()" class="btn btn-primary btn-sm">Import Excel</button>
-                <button @click="exportExcel()" class="btn btn-success btn-sm">Export to Excel</button>
-                <button @click="backupJSON()" class="btn btn-outline btn-sm">Backup JSON</button>
-                <button @click="$refs.jsonRestore.click()" class="btn btn-outline btn-sm">Restore JSON</button>
-                <button @click="syncToCloud()" class="btn btn-cyan btn-sm">Sync Cloud</button>
-                <button @click="loadCloudData()" class="btn btn-outline btn-sm">Load Cloud</button>
-                <button @click="syncWithCloud()" class="btn btn-secondary btn-sm">Manual Sync</button>
-                <button @click="clearAllData()" class="btn btn-danger btn-sm">Clear All Data</button>
+                <button @click="$refs.xlsxImport.click()" class="btn btn-primary btn-sm" title="Replace all data with contents of an Excel file.">
+                    Import from Excel
+                </button>
+                <button @click="exportExcel()" class="btn btn-success btn-sm" title="Export all current data into a single Excel file.">
+                    Export to Excel
+                </button>
+                <button @click="backupJSON()" class="btn btn-outline btn-sm" title="Create a full local backup of all data as a JSON file.">
+                    Backup (JSON)
+                </button>
+                <button @click="$refs.jsonRestore.click()" class="btn btn-outline btn-sm" title="Restore data from a previously created JSON backup file.">
+                    Restore (JSON)
+                </button>
+                <button @click="syncToCloud()" class="btn btn-cyan btn-sm" title="Force-save all current data to the Supabase cloud.">Force Save to Cloud</button>
+                <button @click="loadCloudData()" class="btn btn-outline btn-sm" title="Overwrite local data with the latest data from the Supabase cloud.">Force Load from Cloud</button>
+                <button @click="clearAllData()" class="btn btn-danger btn-sm" title="Permanently delete all data from both the local device and the cloud.">Clear All Data</button>
             </div>
             <div class="mt-3 text-xs text-slate-500">
                 Cloud status: <span :class="cloudAvailable ? 'text-emerald-500' : 'text-rose-500'" x-text="cloudStatus"></span>
@@ -1877,6 +1884,25 @@
         </div>
     </div>
 </div>
+
+<!-- Hidden Printable Area -->
+<div id="print-area" class="hidden"></div>
+
+<!-- Confirmation Modal -->
+<div x-show="modal.show" x-cloak class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-[9998]">
+    <div @click.away="closeModal()" class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md m-4" style="animation:fadeUp 0.2s ease-out">
+        <h3 class="text-lg font-bold text-slate-800" x-text="modal.title"></h3>
+        <p class="text-sm text-slate-500 mt-2" x-text="modal.message"></p>
+        <div class="flex justify-end gap-3 mt-6">
+            <button @click="closeModal()" class="btn btn-outline">Cancel</button>
+            <button @click="modal.onConfirm(); modal.show = false;" class="btn btn-danger">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
 
 <!-- Load secrets first, then clients, then the main app logic -->
 <script src="local-secrets.js"></script>

@@ -8,6 +8,7 @@ const urlsToCache = [
   'groq-client.js',
   'apple-touch-icon.png',
   'manifest.json',
+  'icon-512x512.png',
   // External CDN resources
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/alpinejs',
