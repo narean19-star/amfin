@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="192" y2="192" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1e40af"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="36" fill="url(#bg)"/>
+  <!-- Document outline -->
+  <rect x="46" y="32" width="100" height="128" rx="8" fill="white" opacity="0.95"/>
+  <rect x="46" y="32" width="100" height="128" rx="8" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>
+  <!-- Dollar sign -->
+  <text x="96" y="148" font-family="Georgia, serif" font-size="96" font-weight="bold" fill="#1d4ed8" text-anchor="middle" dominant-baseline="middle">$</text>
+  <!-- Chart line -->
+  <polyline points="62,108 78,92 94,100 110,78 126,94" fill="none" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Data dots -->
+  <circle cx="62" cy="108" r="4" fill="#10b981"/>
+  <circle cx="78" cy="92" r="4" fill="#10b981"/>
+  <circle cx="94" cy="100" r="4" fill="#10b981"/>
+  <circle cx="110" cy="78" r="4" fill="#10b981"/>
+  <circle cx="126" cy="94" r="4" fill="#10b981"/>
+</svg>

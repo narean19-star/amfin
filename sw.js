@@ -1,30 +1,20 @@
-const CACHE_NAME = 'am-sales-cache-v2';
+const CACHE_NAME = 'am-sales-cache-v3';
 const urlsToCache = [
   '/',
   'index.html',
-  'css/style.css',
+  'style.css',
   'app.js',
   'supabase-client.js',
   'groq-client.js',
-  'apple-touch-icon.png',
   'manifest.json',
-  'icon-512x512.png',
-  // External CDN resources
-  'https://cdn.tailwindcss.com',
-  'https://unpkg.com/alpinejs',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
-  'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://cdn.jsdelivr.net/npm/groq-sdk@0.4.0/dist/groq-browser.min.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'
+  'local-secrets.js'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting()) // Activate worker immediately
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -43,8 +33,14 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-  );
+  // Only handle same-origin requests in the cache
+  if (event.request.url.startsWith(self.location.origin)) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => response || fetch(event.request))
+    );
+  } else {
+    // Cross-origin requests: just fetch (browser HTTP cache handles them)
+    event.respondWith(fetch(event.request));
+  }
 });

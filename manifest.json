@@ -1,21 +1,29 @@
 {
   "name": "AM Sales | Pro Accounting v10",
-  "short_name": "AM Accounts",
-  "description": "A progressive web app for accounting.",
+  "short_name": "AM Sales",
+  "description": "Professional accounting & sales management with cloud backup",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "background_color": "#0f172a",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "business", "productivity"],
   "icons": [
     {
-      "src": "apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
+      "src": "icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-512x512.png",
+      "src": "icons/icon-192x192.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "lang": "en",
+  "scope": "."
 }

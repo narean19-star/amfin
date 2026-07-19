@@ -2,7 +2,7 @@
 const SUPABASE_URL = window.localConfig?.SUPABASE_URL || '__SUPABASE_URL__';
 const SUPABASE_ANON_KEY = window.localConfig?.SUPABASE_ANON_KEY || '__SUPABASE_ANON_KEY__';
 
-const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
  * Fetches all data from Supabase tables and reconstructs the original data object shape.
@@ -25,7 +25,6 @@ async function loadDataFromSupabase() {
     supabase.from('cheques').select('*'),
   ]);
 
-  // Reconstruct the object that the application expects
   const data = {
     expenseCategories: (expenseCategoriesData || []).map(r => r.name),
     suppliers: (suppliersData || []).map(r => r.name),
@@ -45,7 +44,6 @@ async function loadDataFromSupabase() {
 
 /**
  * Saves the entire data object to Supabase tables using upsert.
- * Note: Transactional data requires an 'id' property. Master data requires a unique 'name' property.
  */
 async function saveDataToSupabase(data) {
   console.log('Saving data to Supabase...');
@@ -54,19 +52,14 @@ async function saveDataToSupabase(data) {
       entries, purchases, expenses, cheques
   } = data;
 
-  // Helper to convert string arrays to objects for upsert
   const toObjects = (arr) => (arr || []).map(name => ({ name }));
 
-  // Use Promise.all to run saves in parallel
   const results = await Promise.all([
-    // Master data (onConflict on 'name' which must be unique)
     supabase.from('expense_categories').upsert(toObjects(expenseCategories), { onConflict: 'name' }),
     supabase.from('suppliers').upsert(toObjects(suppliers), { onConflict: 'name' }),
     supabase.from('items').upsert(toObjects(items), { onConflict: 'name' }),
     supabase.from('customers').upsert(toObjects(customers), { onConflict: 'name' }),
     supabase.from('owners').upsert(toObjects(owners), { onConflict: 'name' }),
-
-    // Transactional data (onConflict on 'id')
     supabase.from('entries').upsert(entries, { onConflict: 'id' }),
     supabase.from('purchases').upsert(purchases, { onConflict: 'id' }),
     supabase.from('expenses').upsert(expenses, { onConflict: 'id' }),
@@ -84,14 +77,14 @@ async function saveDataToSupabase(data) {
 
 /**
  * Deletes all records from all application tables in Supabase.
- * This is a destructive operation.
+ * Uses 'neq' with a value that works for both UUID (text-based) and bigint columns.
  */
 async function clearAllSupabaseData() {
     console.warn('DESTRUCTIVE ACTION: Clearing all data from Supabase...');
     const tables = ['entries', 'purchases', 'expenses', 'cheques', 'owners', 'customers', 'items', 'suppliers', 'expense_categories'];
     
     const results = await Promise.all(
-        tables.map(table => supabase.from(table).delete().neq('id', -1)) // A condition to delete all rows
+        tables.map(table => supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000'))
     );
 
     const errors = results.map(({ error }) => error).filter(Boolean);
